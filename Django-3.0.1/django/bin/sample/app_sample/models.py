@@ -129,17 +129,6 @@ class DjangoSession(models.Model):
         db_table = 'django_session'
 
 
-class Marks(models.Model):
-    memberid = models.OneToOneField('Members', models.DO_NOTHING, db_column='memberid', primary_key=True)
-    caseid = models.ForeignKey('Videos', models.DO_NOTHING, db_column='caseid')
-    videoid = models.ForeignKey('Videos', models.DO_NOTHING, db_column='videoid')
-
-    class Meta:
-        managed = False
-        db_table = 'marks'
-        unique_together = (('memberid', 'caseid', 'videoid'),)
-
-
 class Membercases(models.Model):
     memberid = models.OneToOneField('Members', models.DO_NOTHING, db_column='memberid', primary_key=True)
     caseid = models.ForeignKey(Cases, models.DO_NOTHING, db_column='caseid')
@@ -169,3 +158,14 @@ class Videos(models.Model):
         managed = False
         db_table = 'videos'
         unique_together = (('caseid', 'videoid'),)
+
+
+class Marks(models.Model):
+    memberid = models.OneToOneField('Members', models.DO_NOTHING, db_column='memberid', primary_key=True)
+    caseid = models.ForeignKey('Videos', models.DO_NOTHING, db_column='caseid', related_name='markscaseid')
+    videoid = models.ForeignKey('Videos', models.DO_NOTHING, db_column='videoid', related_name='marksvideoid')
+
+    class Meta:
+        managed = False
+        db_table = 'marks'
+        unique_together = (('memberid', 'caseid', 'videoid'),)
