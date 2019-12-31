@@ -1,0 +1,36 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:1.17.6-alpine
+    ports:
+      - '80:80'
+      - '8000:8000'
+    volumes:
+      - ${WWW_DIR}:/var/www
+      - ${NGINX_LOG_DIR}:/var/log/nginx
+      - ./conf.d/nginx:/etc/nginx/conf.d:ro
+    depends_on:
+      - policelab-server
+
+  mariadb:
+    image: mariadb:10.4.11-bionic
+    volumes:
+      - ${MARIA_DATA_DIR}:/var/lib/mysql
+      - ./conf.d/mariadb:/etc/mysql/conf.d:ro
+    environment:
+      - 'MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}'
+
+  policelab-server:
+    build: .
+    volumes:
+      - ${WWW_DIR}:/var/www
+      - ${APP_SRC_DIR}:/opt/policelab-server
+      - ${SUPERVISOR_LOG_DIR}:/var/log/supervisor
+      - ./conf.d/supervisor:/etc/supervisor:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - 'UID=${UID}'
+      - 'GID=${GID}'
+    depends_on:
+      - mariadb
