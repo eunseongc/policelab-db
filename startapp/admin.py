@@ -7,8 +7,8 @@ from .models import Videos
 from .models import Marks
 # Register your models here.
 
-admin.site.register(Members)
-admin.site.register(Cases)
-admin.site.register(Membercases)
-admin.site.register(Videos)
-admin.site.register(Marks)
+admin.site.register(Member)
+admin.site.register(Case)
+admin.site.register(Membercase)
+admin.site.register(Video)
+admin.site.register(Mark)
