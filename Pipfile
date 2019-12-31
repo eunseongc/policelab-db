@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 yapf = "*"
+flake8 = "*"
 
 [packages]
 django = "*"
