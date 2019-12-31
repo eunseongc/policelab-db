@@ -129,6 +129,17 @@ class DjangoSession(models.Model):
         db_table = 'django_session'
 
 
+class Marks(models.Model):
+    memberid = models.OneToOneField('Members', models.DO_NOTHING, db_column='memberid', primary_key=True)
+    caseid = models.ForeignKey('Videos', models.DO_NOTHING, db_column='caseid', related_name='Marks_caseid')
+    videoid = models.ForeignKey('Videos', models.DO_NOTHING, db_column='videoid', related_name='Marks_videoid')
+
+    class Meta:
+        managed = False
+        db_table = 'marks'
+        unique_together = (('memberid', 'caseid', 'videoid'),)
+
+
 class Membercases(models.Model):
     memberid = models.OneToOneField('Members', models.DO_NOTHING, db_column='memberid', primary_key=True)
     caseid = models.ForeignKey(Cases, models.DO_NOTHING, db_column='caseid')
@@ -153,19 +164,12 @@ class Videos(models.Model):
     caseid = models.OneToOneField(Cases, models.DO_NOTHING, db_column='caseid', primary_key=True)
     videoid = models.IntegerField()
     videolink = models.CharField(max_length=300)
+    metadata = models.CharField(max_length=300, blank=True, null=True)
+    thumbnaillink = models.CharField(max_length=300, blank=True, null=True)
+    videolength = models.IntegerField(blank=True, null=True)
+    timestamp = models.DateTimeField()
 
     class Meta:
         managed = False
         db_table = 'videos'
         unique_together = (('caseid', 'videoid'),)
-
-
-class Marks(models.Model):
-    memberid = models.OneToOneField('Members', models.DO_NOTHING, db_column='memberid', primary_key=True)
-    caseid = models.ForeignKey('Videos', models.DO_NOTHING, db_column='caseid', related_name='markscaseid')
-    videoid = models.ForeignKey('Videos', models.DO_NOTHING, db_column='videoid', related_name='marksvideoid')
-
-    class Meta:
-        managed = False
-        db_table = 'marks'
-        unique_together = (('memberid', 'caseid', 'videoid'),)

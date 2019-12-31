@@ -7,6 +7,11 @@ from .models import Videos
 from .models import Marks
 # Register your models here.
 
+
+class MemberAdmin(admin.ModelAdmin):
+    list_display = []
+
+
 admin.site.register(Members)
 admin.site.register(Cases)
 admin.site.register(Membercases)
