@@ -137,3 +137,6 @@ GRAPHENE = {
 # Cross origin
 CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
 CORS_ALLOW_CREDENTIALS = True
+
+# Media root
+MEDIA_ROOT = '/var/www/data'
