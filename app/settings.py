@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'graphene_django',
     'accounts',
+    'cases',
 ]
 
 MIDDLEWARE = [
