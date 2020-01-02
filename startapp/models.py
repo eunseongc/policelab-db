@@ -42,8 +42,8 @@ class Video(models.Model):
     class Meta:
         unique_together = ['case', 'videoid']
     
-#   def __str__(self):
-#       return "Case %d Video %d" % ( self.case.caseid, self.videoid )
+    def __str__(self):
+        return "Case %d Video %d" % ( self.case.caseid, self.videoid )
     
 class Mark(models.Model):
     markid = models.AutoField(primary_key=True)
