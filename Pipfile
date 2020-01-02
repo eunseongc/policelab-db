@@ -17,3 +17,4 @@ django-cors-headers = "*"
 django-filter = "*"
 graphene = "*"
 graphene-django = "*"
+qrcode = {extras = ["pil"],version = "*"}

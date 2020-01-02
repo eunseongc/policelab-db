@@ -1,8 +1,17 @@
+import os
+
 from django.db import models
+from django.conf import settings
 
 
 def video_directory_path(instance, filename):
-    return 'case/{0}/{1}'.format(instance.case.id, filename)
+    path = 'case/{0}/video/{1}'.format(instance.case.id, filename)
+    return os.path.join(settings.MEDIA_ROOT_PREFIX, path)
+
+
+def qrcode_directory_path(instance, filename):
+    path = 'case/{0}/qrcode/{1}'.format(instance.id, filename)
+    return os.path.join(settings.MEDIA_ROOT_PREFIX, path)
 
 
 class Case(models.Model):
@@ -23,6 +32,9 @@ class Case(models.Model):
 
     # 사건 생성 날짜
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # qrcode
+    qrcode = models.FileField(upload_to=qrcode_directory_path)
 
     # 사건과 관련된 사용자
     members = models.ManyToManyField(
