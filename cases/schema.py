@@ -31,7 +31,14 @@ class VideoNode(DjangoObjectType):
 
 
 class Query:
-    pass
+    case = graphene.Field(CaseNode, token=graphene.String(required=True))
+
+    def resolve_case(self, info, **input):
+        try:
+            case = Case.objects.get(token=input.get('token'))
+            return case
+        except Case.DoesNotExist:
+            return None
 
 
 class CreateCase(graphene.relay.ClientIDMutation):
