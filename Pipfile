@@ -18,3 +18,4 @@ django-filter = "*"
 graphene = "*"
 graphene-django = "*"
 qrcode = {extras = ["pil"],version = "*"}
+graphene-file-upload = "*"
