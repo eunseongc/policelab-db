@@ -49,9 +49,6 @@ class Video(models.Model):
     # upload 파일 위치
     upload = models.FileField(upload_to=video_directory_path)
 
-    # public file link url
-    link = models.CharField(max_length=255)
-
     case = models.ForeignKey(
         Case,
         on_delete=models.CASCADE,

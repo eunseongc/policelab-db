@@ -1,8 +1,8 @@
-from graphene_django.views import GraphQLView
+from graphene_file_upload.django import FileUploadGraphQLView
 from .exceptions import APIError
 
 
-class CustomGraphQLView(GraphQLView):
+class CustomGraphQLView(FileUploadGraphQLView):
     @staticmethod
     def format_error(error):
         if hasattr(error, 'original_error') and error.original_error:
@@ -11,4 +11,4 @@ class CustomGraphQLView(GraphQLView):
                 formatted['code'] = error.original_error.code
             return formatted
 
-        return GraphQLView.format_error(error)
+        return FileUploadGraphQLView.format_error(error)

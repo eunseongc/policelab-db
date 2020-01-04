@@ -142,6 +142,9 @@ CORS_ALLOW_CREDENTIALS = True
 MEDIA_ROOT = '/var/www'
 MEDIA_ROOT_PREFIX = 'data/'
 
+# Web Url Prefix
+WEB_URL_PREFIX = 'http://localhost:3000/'
+
 # Server Url Prefix
 SERVER_URL_PREFIX = 'http://localhost:8000/'
 
