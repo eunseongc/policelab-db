@@ -138,6 +138,10 @@ GRAPHENE = {
 CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
 CORS_ALLOW_CREDENTIALS = True
 
+# Session
+SESSION_COOKIE_SAMESITE = None
+# SESSION_COOKIE_SECURE = True
+
 # Media root
 MEDIA_ROOT = '/var/www'
 MEDIA_ROOT_PREFIX = 'data/'
