@@ -63,7 +63,7 @@ class CreateCase(graphene.relay.ClientIDMutation):
         text = input.get('text')
         token = get_random_string(length=16)
 
-        qr_img = qrcode.make(settings.WEB_URL_PREFIX + 'case/{}'.format(token))
+        qr_img = qrcode.make(settings.WEB_URL_PREFIX + 'case/upload/{}'.format(token))
 
         f = BytesIO()
         qr_img.save(f, format='png')
