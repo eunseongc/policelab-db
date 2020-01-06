@@ -42,12 +42,12 @@ class Login(graphene.relay.ClientIDMutation):
 
 
 class Logout(graphene.relay.ClientIDMutation):
-    state = graphene.Boolean(required=True)
+    ok = graphene.Boolean(required=True)
 
     @method_decorator(login_required)
     def mutate_and_get_payload(self, info, **input):
         logout(info.context)
-        return Logout(state=True)
+        return Logout(ok=True)
 
 
 class Mutation:
