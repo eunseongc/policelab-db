@@ -2,7 +2,6 @@ FROM ubuntu:18.04
 
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
-ENV PIPENV_VENV_IN_PROJECT 1
 ENV UID 1000
 ENV GID 1000
 
@@ -17,6 +16,6 @@ RUN apt update && \
 	rm -rf /var/lib/apt/lists/* && \
 	pip3 --no-cache-dir install pipenv
 
-RUN pipenv install
+RUN pipenv install --system --deploy
 
 ENTRYPOINT supervisord -n -c /etc/supervisor/supervisord.conf
