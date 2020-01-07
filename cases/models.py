@@ -5,7 +5,7 @@
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
-from django.db import models
+from django.contrib.gis.db import models
 from django.conf import settings
 
 import os
@@ -73,6 +73,9 @@ class Video(models.Model):
 
     # 영상 메타 데이터
     meta = models.CharField(max_length=300, blank=True)
+
+    # 영상 촬영 위치
+    location = models.PointField(blank=True, null=True)
 
     case = models.ForeignKey(
         Case,
