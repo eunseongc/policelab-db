@@ -1,10 +1,3 @@
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
 from django.contrib.gis.db import models
 from django.conf import settings
 
@@ -81,4 +74,18 @@ class Video(models.Model):
         Case,
         on_delete=models.CASCADE,
         related_name='videos',
+    )
+
+
+class Bookmark(models.Model):
+    # 북마크 시간
+    sec = models.FloatField(default=0)
+
+    # 북마크 코드
+    code = models.IntegerField(default=0)
+
+    video = models.ForeignKey(
+        Video,
+        on_delete=models.CASCADE,
+        related_name='bookmarks',
     )

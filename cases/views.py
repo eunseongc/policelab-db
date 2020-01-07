@@ -34,7 +34,7 @@ def search_person(request):
     for video in videos:
         video_path = video.upload.split('/')[-1]
         gallery_video_list.append(video_path)
-        
+
         # Calculate query_feature_vector
         # Calculate video.npy
     """
@@ -82,17 +82,22 @@ def video_list_by_case():
         dict_case = model_to_dict(video.case)
         dict_case["qrcode"] = str(dict_case["qrcode"])
 
-        result.append({"result":
-                           {"filepath": dict_video["upload"], "video_name": dict_video["name"],
-                            "video_date": str(video.uploaded_at), "video_length": dict_video["length"],
-                            "video_size": dict_video["size"], "case_name": dict_case["name"],
-                            "case_date": str(video.case.created_at), "case_loc": dict_case["loc"], "case_info": dict_case["text"]
-                            }
-                       })
+        bookmarks = video.bookmarks.all()
+        bookmark_result = []
 
-    return result
+        for bookmark in bookmarks:
+            bookmark_result.append({"sec": bookmark.sec, "code": bookmark.code})
+
+        result.append({"filepath": dict_video["upload"], "video_id": str(dict_video["id"]),
+                        "video_name": dict_video["name"], "video_date": str(video.uploaded_at),
+                        "video_length": dict_video["length"], "video_size": dict_video["size"],
+                        "case_name": dict_case["name"], "case_date": str(video.case.created_at),
+                        "case_loc": dict_case["loc"], "case_info": dict_case["text"],
+                        "bookmark": bookmark_result
+                        })
+
+    return {"result": result}
 
 
 def login(request):
     return JsonResponse(video_list_by_case(), safe=False)
-
