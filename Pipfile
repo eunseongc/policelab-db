@@ -19,3 +19,8 @@ graphene = "*"
 graphene-django = "*"
 qrcode = {extras = ["pil"],version = "*"}
 graphene-file-upload = "*"
+ujson = "*"
+numpy = "*"
+torch = "*"
+torchvision = "*"
+pillow = "==6.2.1"

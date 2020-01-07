@@ -15,8 +15,9 @@ Including another URLconf
 """
 from . import views
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
-    path('login/', views.login, name='login'),
-    path('image_resolution/', views.image_resolution, name='image resolution')
+    path('login/', csrf_exempt(views.login), name='login'),
+    path('image_resolution/', csrf_exempt(views.image_resolution), name='image resolution')
 ]
