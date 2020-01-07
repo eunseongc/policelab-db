@@ -23,23 +23,32 @@ def decode_image(base64_data):
 
 
 def search_person(request):
+    """
     image = request.POST.get('image')
     videos = Video.objects.all()
 
-    query_feature_path = '../../sample_query_feature.npy'
-    video_path_prefix = '../../static/ReID/gallery'
+    binary_image = decode_image(image)
+    """
+    
+    query_feature_path = '~/policelab-db/data/var/www/data/case/1/video/info/sample_query_feature.npy'
+    video_path_prefix = '~/policelab-db/data/var/www/data/case/1/video/info/gallery'
+
+    # query_feature_path = r'C:\Users\dmlab\Desktop\TEST\sample_query_feature.npy'
+    # video_path_prefix = r'C:\Users\dmlab\Desktop\TEST\gallery'
+
     gallery_video_list = ['A_park_0', 'A_road_0', 'A_street_0']
 
     """
     for video in videos:
-        video_path = video.upload.split('/')[-1]
-        gallery_video_list.append(video_path)
+    video_path = video.upload.split('/')[-1]
+    gallery_video_list.append(video_path)
 
-        # Calculate query_feature_vector
-        # Calculate video.npy
-    """
+    # Calculate query_feature_vector
+
+    # Calculate video.npy
 
     # 이후, 동적 입력에 작동하도록 수정 -> VC lab. 요청
+    """
 
     # Load query feature
     query_feature = np.load(query_feature_path)
@@ -47,6 +56,7 @@ def search_person(request):
     # Set gallery from video list
     gallery = {}
 
+    result = []
     for i, video in enumerate(gallery_video_list):
         gallery_path = os.path.join(video_path_prefix, video, 'gallery.npy')
         sub_gallery = np.load(gallery_path, allow_pickle=True).item()
@@ -56,7 +66,25 @@ def search_person(request):
     # Calculate similarity
     result_dict = calc_similarity(query_feature=query_feature, gallery=gallery)
 
-    #return JsonResponse(result_dict, safe=False)
+    video = Video.objects.first()
+
+    for key in result_dict.keys():
+        crop_result = []
+        for i in range(5):
+        file_path = video_path_prefix
+        crop_path_array = result_dict[key][i].split('/')[3:]
+        
+        for path_element in crop_path_array:
+            file_path += path_element
+
+        with open(file_path, 'rb') as data:
+            file_binary = data.read()
+            binary_data = encode_image(file_binary)
+            crop_result.append({"image": str(binary_data), "time": 12.3, "similarity": 0.7})
+
+            result.append({"filepath": str(video.upload), "crops": crop_result})
+
+    return JsonResponse(result, safe=False)
 
 
 def image_resolution(request):

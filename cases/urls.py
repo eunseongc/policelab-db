@@ -19,5 +19,6 @@ from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     path('login/', csrf_exempt(views.login), name='login'),
-    path('image_resolution/', csrf_exempt(views.image_resolution), name='image resolution')
+    path('image_resolution/', csrf_exempt(views.image_resolution), name='image resolution'),
+    path('search/', csrf_exempt(views.search_person), name='search person'),
 ]
