@@ -7,6 +7,7 @@ from django.conf import settings
 from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
 from django.core.files.base import ContentFile
+from django.contrib.gis.geos import Point
 
 from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
@@ -16,6 +17,7 @@ from app.decorators import login_required, method_decorator
 from app.exceptions import InvalidInputError
 
 from .models import Case, Video
+from .types import LocationType, LocationInput
 
 
 class CaseNode(DjangoObjectType):
@@ -29,13 +31,21 @@ class CaseNode(DjangoObjectType):
 
 
 class VideoNode(DjangoObjectType):
+    location = graphene.Field(LocationType)
+
     class Meta:
         model = Video
         interfaces = (graphene.relay.Node, )
         filter_fields = []
+        exclude_fields = ['location']
 
     def resolve_upload(self, *args, **kwargs):
         return settings.SERVER_URL_PREFIX + str(self.upload)
+
+    def resolve_location(self, *args, **kwargs):
+        if self.location:
+            return LocationType(latitude=self.location.y, longitude=self.location.x)
+        return None
 
 
 class Query:
@@ -87,6 +97,7 @@ class UploadVideo(graphene.relay.ClientIDMutation):
 
     class Input:
         token = graphene.String(required=True)
+        location = graphene.Field(LocationInput)
         upload = Upload()
 
     def mutate_and_get_payload(self, info, **input):
@@ -100,6 +111,13 @@ class UploadVideo(graphene.relay.ClientIDMutation):
 
         video = Video.objects.create(case=case)
         video.upload.save(input.get('upload').name, input.get('upload'))
+
+        location = input.get('location')
+
+        if location:
+            point = Point(location.longitude, location.latitude, srid=4326)
+            video.location = point
+            video.save()
 
         return UploadVideo(video=video)
 

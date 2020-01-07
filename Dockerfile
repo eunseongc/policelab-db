@@ -12,7 +12,8 @@ RUN groupadd -g $GID policelab-server && useradd -u $UID -g policelab-server pol
 
 RUN apt update && \
 	apt install -y python3 python3-pip supervisor libssl-dev \
-	git python3-dev libmysqlclient-dev mariadb-client && \
+	git python3-dev libmysqlclient-dev mariadb-client ffmpeg \
+	binutils libproj-dev gdal-bin && \
 	rm -rf /var/lib/apt/lists/* && \
 	pip3 --no-cache-dir install pipenv
 

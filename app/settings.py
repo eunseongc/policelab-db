@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'app.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.contrib.gis.db.backends.mysql',
         'HOST': 'mariadb',
         'USER': 'root',
         'PASSWORD': 'root',
