@@ -75,7 +75,7 @@ def search_person(request):
             crop_path_array = result_dict[key][i].split('/')[3:]
         
             for path_element in crop_path_array:
-                file_path += path_element
+                file_path += path_element + "/"
 
             with open(file_path, 'rb') as data:
                 file_binary = data.read()
