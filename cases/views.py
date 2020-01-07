@@ -71,18 +71,18 @@ def search_person(request):
     for key in result_dict.keys():
         crop_result = []
         for i in range(5):
-        file_path = video_path_prefix
-        crop_path_array = result_dict[key][i].split('/')[3:]
+            file_path = video_path_prefix
+            crop_path_array = result_dict[key][i].split('/')[3:]
         
-        for path_element in crop_path_array:
-            file_path += path_element
+            for path_element in crop_path_array:
+                file_path += path_element
 
-        with open(file_path, 'rb') as data:
-            file_binary = data.read()
-            binary_data = encode_image(file_binary)
-            crop_result.append({"image": str(binary_data), "time": 12.3, "similarity": 0.7})
+            with open(file_path, 'rb') as data:
+                file_binary = data.read()
+                binary_data = encode_image(file_binary)
+                crop_result.append({"image": str(binary_data), "time": 12.3, "similarity": 0.7})
 
-            result.append({"filepath": str(video.upload), "crops": crop_result})
+        result.append({"filepath": str(video.upload), "crops": crop_result})
 
     return JsonResponse(result, safe=False)
 
