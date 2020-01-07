@@ -72,10 +72,11 @@ def search_person(request):
         crop_result = []
         for i in range(5):
             file_path = video_path_prefix
-            crop_path_array = result_dict[key][i].split('/')[3:]
+            crop_path_array = result_dict[key][i].split('/')[3:-1]
         
             for path_element in crop_path_array:
                 file_path += path_element + "/"
+            file_path += result_dict[key][i].split('/')[-1]
 
             with open(file_path, 'rb') as data:
                 file_binary = data.read()
