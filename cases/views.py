@@ -30,8 +30,8 @@ def search_person(request):
     binary_image = decode_image(image)
     """
     
-    query_feature_path = '~/policelab-db/data/var/www/data/case/1/video/info/sample_query_feature.npy'
-    video_path_prefix = '~/policelab-db/data/var/www/data/case/1/video/info/gallery'
+    query_feature_path = '/var/www/data/case/1/video/info/sample_query_feature.npy'
+    video_path_prefix = '/var/www/data/case/1/video/info/gallery/'
 
     # query_feature_path = r'C:\Users\dmlab\Desktop\TEST\sample_query_feature.npy'
     # video_path_prefix = r'C:\Users\dmlab\Desktop\TEST\gallery'
