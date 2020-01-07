@@ -7,7 +7,6 @@ from .models import Case
 from .models import Video
 from django.forms.models import model_to_dict
 import json
-import ujson
 import base64
 import numpy as np
 import os
@@ -16,15 +15,11 @@ from .utils import calc_similarity
 
 
 def encode_image(binary_data):
-    """
-    with open(path, "rb") as imageFile:
-        image_str = base64.b64encode(imageFile.read())
-    """
     return base64.b64encode(binary_data)
 
 
 def decode_image(base64_data):
-    return base64.decodebytes(base64_data)
+    return base64.b64decode(base64_data)
 
 
 def search_person(request):
@@ -65,17 +60,16 @@ def search_person(request):
 
 
 def image_resolution(request):
-    received_json_data = json.loads(request.body)
-    image = received_json_data.POST.get('image')
+    image = request.POST.get('image')
 
     binary_image = decode_image(image)
 
     # resolution function
     result_image = encode_image(binary_image)
 
-    data = {"result": result_image}
+    data = {"result": str(result_image)}
 
-    return JsonResponse(ujson.dumps(data), safe=False)
+    return JsonResponse(data, safe=False)
 
 
 def video_list_by_case():
