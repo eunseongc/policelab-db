@@ -40,7 +40,7 @@ class Case(models.Model):
     loc = models.CharField(max_length=300, null=True)
 
     # Time information of the case
-    case_date = models.DateTimeField('case occured')
+    case_date = models.DateTimeField('case occured', blank=True, null=True)
 
     # Members related to the case
     members = models.ManyToManyField(
@@ -77,7 +77,7 @@ class Video(models.Model):
     location = models.PointField(blank=True, null=True)
 
     # Time information of the video
-    rec_date = models.DateTimeField('date recorded')    
+    rec_date = models.DateTimeField('date recorded', blank=True, null=True)
 
     case = models.ForeignKey(
         Case,
