@@ -118,9 +118,9 @@ def video_list_by_case():
             bookmark_result.append({"sec": bookmark.sec, "code": bookmark.code})
 
         result.append({"filepath": dict_video["upload"], "video_id": str(dict_video["id"]),
-                        "video_name": dict_video["name"], "video_date": str(video.uploaded_at),
+                        "video_name": dict_video["name"], "video_date": str(dict_video["rec_date"]),
                         "video_length": dict_video["length"], "video_size": dict_video["size"],
-                        "case_name": dict_case["name"], "case_date": str(video.case.created_at),
+                        "case_name": dict_case["name"], "case_date": str(dict_case["case_date"]),
                         "case_loc": dict_case["loc"], "case_info": dict_case["text"],
                         "bookmark": bookmark_result
                         })
