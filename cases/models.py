@@ -21,7 +21,7 @@ class Case(models.Model):
     # 사건 이름
     name = models.CharField(max_length=255)
 
-    # 사건 고유 토큰 (QR 코드 생성시)
+    # 사건 고유 토큰 (QR 코드 �:w�성시)
     token = models.CharField(max_length=255, unique=True)
 
     # 사건 개요
@@ -38,6 +38,9 @@ class Case(models.Model):
 
     # 사건 발생 위치
     loc = models.CharField(max_length=300, null=True)
+
+    # time information of 
+    case_date = models.DateTimeField('case occured')
 
     # 사건과 관련된 사용자
     members = models.ManyToManyField(
@@ -72,6 +75,9 @@ class Video(models.Model):
 
     # 영상 촬영 위치
     location = models.PointField(blank=True, null=True)
+
+    # time information of video
+    rec_date = models.DateTimeField('date recorded')    
 
     case = models.ForeignKey(
         Case,
