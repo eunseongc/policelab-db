@@ -97,4 +97,4 @@ class Bookmark(models.Model):
     )
 
     def __str__(self):
-        return self.code
+        return str(self.code)
