@@ -18,31 +18,31 @@ class Case(models.Model):
     class Meta:
         verbose_name_plural = 'cases'
 
-    # 사건 이름
+    # Case name
     name = models.CharField(max_length=255)
 
-    # 사건 고유 토큰 (QR 코드 �:w�성시)
+    # Token for each case (Provided when QR code is generated)
     token = models.CharField(max_length=255, unique=True)
 
-    # 사건 개요
+    # Case overview
     text = models.TextField(blank=True, null=True)
 
-    # 사건 만료 여부
+    # Case expiration status
     is_expired = models.BooleanField(default=False)
 
-    # 사건 생성 날짜
+    # Case creation date
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # qrcode
+    # QR code
     qrcode = models.FileField(upload_to=qrcode_directory_path)
 
-    # 사건 발생 위치
+    # Case location
     loc = models.CharField(max_length=300, null=True)
 
-    # time information of 
+    # Time information of the case
     case_date = models.DateTimeField('case occured')
 
-    # 사건과 관련된 사용자
+    # Members related to the case
     members = models.ManyToManyField(
         'accounts.User',
         related_name='cases',
@@ -55,28 +55,28 @@ class Case(models.Model):
 
 class Video(models.Model):
 
-    # upload 파일 위치
+    # Directory to upload file
     upload = models.FileField(upload_to=video_directory_path)
 
-    # 영상 이름
+    # Video name
     name = models.CharField(max_length=300)
 
-    # 영상 길이
+    # Video length
     length = models.IntegerField(default=0)
 
-    # 영상 날짜
+    # Upload date
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
-    # 영상 크기
+    # Video size
     size = models.IntegerField(default=0)
 
-    # 영상 메타 데이터
+    # Meta data of the video
     meta = models.CharField(max_length=300, blank=True)
 
-    # 영상 촬영 위치
+    # Location where the video is recorded
     location = models.PointField(blank=True, null=True)
 
-    # time information of video
+    # Time information of the video
     rec_date = models.DateTimeField('date recorded')    
 
     case = models.ForeignKey(
@@ -90,10 +90,10 @@ class Video(models.Model):
 
 
 class Bookmark(models.Model):
-    # 북마크 시간
+    # Bookmark time
     sec = models.FloatField(default=0)
 
-    # 북마크 코드
+    # Bookmark code
     code = models.IntegerField(default=0)
 
     video = models.ForeignKey(
