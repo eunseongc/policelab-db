@@ -21,4 +21,4 @@ class BookmarkAdmin(admin.ModelAdmin):
     list_display = ['video_name', 'sec', 'code']
 
     def video_name(self, obj):
-        obj.video.name
+        return obj.video.name
