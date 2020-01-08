@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'django_extensions',
     'corsheaders',
+    'django_celery_results',
     'graphene_django',
     'accounts',
     'cases',
@@ -176,3 +177,8 @@ LOGGING = {
         },
     },
 }
+
+# Celery settings
+
+CELERY_BROKER_URL = 'pyamqp://policelab:policelab@rabbitmq/policelab'
+CELERY_RESULT_BACKEND = 'django-db'

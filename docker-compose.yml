@@ -12,6 +12,13 @@ services:
     depends_on:
       - policelab-server
 
+  rabbitmq:
+    image: rabbitmq:3.8.2
+    environment:
+      - 'RABBITMQ_DEFAULT_USER=policelab'
+      - 'RABBITMQ_DEFAULT_PASS=policelab'
+      - 'RABBITMQ_DEFAULT_VHOST=policelab'
+
   mariadb:
     image: mariadb:10.4.11-bionic
     volumes:
@@ -34,3 +41,4 @@ services:
       - 'GID=${GID}'
     depends_on:
       - mariadb
+      - rabbitmq
