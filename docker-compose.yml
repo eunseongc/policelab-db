@@ -27,6 +27,19 @@ services:
     environment:
       - 'MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}'
 
+  samba:
+    image: dperson/samba
+    ports:
+      - 139:139
+      - 445:445
+    volumes:
+      - ${WWW_DIR}:/mount
+      - ./conf.d/samba:/etc/samba:ro
+    environment:
+      - TZ=Asia/Seoul
+      - USER=policelab;policelab;${UID};policelab;${GID}
+    command: ['-p']
+
   policelab-server:
     build: .
     volumes:
