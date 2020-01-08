@@ -46,6 +46,9 @@ class Case(models.Model):
         blank=True,
     )
 
+    def __str__(self):
+        return self.name
+
 
 class Video(models.Model):
 
@@ -76,6 +79,9 @@ class Video(models.Model):
         related_name='videos',
     )
 
+    def __str__(self):
+        return self.name
+
 
 class Bookmark(models.Model):
     # 북마크 시간
@@ -89,3 +95,6 @@ class Bookmark(models.Model):
         on_delete=models.CASCADE,
         related_name='bookmarks',
     )
+
+    def __str__(self):
+        return self.code

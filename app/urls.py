@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path, include
 from django.conf import settings
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.decorators.csrf import csrf_exempt
 
 from .views import CustomGraphQLView
@@ -31,3 +32,5 @@ urlpatterns += [
     re_path(r'^graphql/?$',
             csrf_exempt(CustomGraphQLView.as_view(graphiql=settings.DEBUG))),
 ]
+
+urlpatterns += staticfiles_urlpatterns()
