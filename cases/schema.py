@@ -18,6 +18,7 @@ from app.exceptions import InvalidInputError
 
 from .models import Case, Video
 from .types import LocationType, LocationInput
+from .tasks import create_gallery
 
 
 class CaseNode(DjangoObjectType):
@@ -118,6 +119,8 @@ class UploadVideo(graphene.relay.ClientIDMutation):
             point = Point(location.longitude, location.latitude, srid=4326)
             video.location = point
             video.save()
+
+        create_gallery.delay(video.id)
 
         return UploadVideo(video=video)
 

@@ -182,3 +182,7 @@ LOGGING = {
 
 CELERY_BROKER_URL = 'pyamqp://policelab:policelab@rabbitmq/policelab'
 CELERY_RESULT_BACKEND = 'django-db'
+
+# Websocket server
+
+WEBSOCKET_SERVER = 'ws://localhost:8765'
