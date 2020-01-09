@@ -10,7 +10,21 @@ def qrcode_directory_path(instance, filename):
 
 
 def video_directory_path(instance, filename):
-    path = 'case/{0}/video/{1}/{2}'.format(instance.case.id, instance.id, filename)
+    path = 'case/{0}/video/{1}/{2}'.format(
+        instance.case.id,
+        instance.id,
+        filename,
+    )
+    return os.path.join(settings.MEDIA_ROOT_PREFIX, path)
+
+
+def image_directory_path(instance, filename):
+    path = 'case/{0}/video/{1}/image/{2}/{3}'.format(
+        instance.video.case.id,
+        instance.video.id,
+        instance.id,
+        filename,
+    )
     return os.path.join(settings.MEDIA_ROOT_PREFIX, path)
 
 
@@ -79,6 +93,9 @@ class Video(models.Model):
     # Time information of the video
     rec_date = models.DateTimeField('date recorded', blank=True, null=True)
 
+    # Whether video is preprocessed or not
+    is_preprocessed = models.BooleanField(default=False)
+
     case = models.ForeignKey(
         Case,
         on_delete=models.CASCADE,
@@ -104,3 +121,18 @@ class Bookmark(models.Model):
 
     def __str__(self):
         return str(self.code)
+
+
+class Image(models.Model):
+    video = models.ForeignKey(
+        Video,
+        on_delete=models.CASCADE,
+        related_name='images',
+    )
+
+    original = models.ImageField(upload_to=image_directory_path)
+    improvement = models.ImageField(
+        upload_to=image_directory_path,
+        blank=True,
+        null=True,
+    )
