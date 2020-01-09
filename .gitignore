@@ -288,3 +288,6 @@ data/
 
 # Light Weight process files
 *.lwp
+
+# misc
+server/
