@@ -10,7 +10,7 @@ def qrcode_directory_path(instance, filename):
 
 
 def video_directory_path(instance, filename):
-    path = 'case/{0}/video/{1}'.format(instance.case.id, filename)
+    path = 'case/{0}/video/{1}/{2}'.format(instance.case.id, instance.id, filename)
     return os.path.join(settings.MEDIA_ROOT_PREFIX, path)
 
 
