@@ -177,6 +177,7 @@ coverage.xml
 *.log
 local_settings.py
 db.sqlite3
+django.db
 
 # Flask stuff:
 instance/
@@ -287,4 +288,3 @@ data/
 
 # Light Weight process files
 *.lwp
-
