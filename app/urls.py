@@ -16,17 +16,26 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path, include
 from django.conf import settings
+from django.shortcuts import render
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.decorators.csrf import csrf_exempt
 
 from .views import CustomGraphQLView
+
+
+def render_graphiql(request):
+    return render(request, 'app/graphiql.html')
+
 
 urlpatterns = [
     path('cases/', include('cases.urls'))
 ]
 
 if settings.DEBUG:
-    urlpatterns += [path('admin/', admin.site.urls)]
+    urlpatterns += [
+        path('admin/', admin.site.urls),
+        path('graphiql/', render_graphiql),
+    ]
 
 urlpatterns += [
     re_path(r'^graphql/?$',

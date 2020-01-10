@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_celery_results',
     'graphene_django',
+    'channels',
+    'graphene_subscriptions',
     'accounts',
     'cases',
 ]
@@ -60,7 +62,7 @@ ROOT_URLCONF = 'app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -186,3 +188,15 @@ CELERY_RESULT_BACKEND = 'django-db'
 # Websocket server
 
 WEBSOCKET_SERVER = 'ws://localhost:8765'
+
+# ASGI APPLICATION
+
+ASGI_APPLICATION = "app.asgi.application"
+
+# channels
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}

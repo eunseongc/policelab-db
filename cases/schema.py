@@ -9,6 +9,8 @@ from django.utils.translation import gettext_lazy as _
 from django.core.files.base import ContentFile
 from django.contrib.gis.geos import Point
 
+from rx import Observable
+
 from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
 from graphene_file_upload.scalars import Upload
@@ -123,6 +125,16 @@ class UploadVideo(graphene.relay.ClientIDMutation):
         create_gallery.delay(video.id)
 
         return UploadVideo(video=video)
+
+
+class Subscription:
+
+    count_seconds = graphene.Int(up_to=graphene.Int())
+
+    def resolve_count_seconds(root, info, up_to=5):
+        return Observable.interval(1000)\
+                         .map(lambda i: "{0}".format(i))\
+                         .take_while(lambda i: int(i) <= up_to)
 
 
 class Mutation:
