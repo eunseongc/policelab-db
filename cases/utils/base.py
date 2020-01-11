@@ -41,8 +41,8 @@ def to_numpy(tensor):
     if torch.is_tensor(tensor):
         return tensor.cpu().numpy()
     elif type(tensor).__module__ != 'numpy':
-        raise ValueError("Cannot convert {} to numpy array"
-                         .format(type(tensor)))
+        raise ValueError("Cannot convert {} to numpy array".format(
+            type(tensor)))
     return tensor
 
 
@@ -50,8 +50,8 @@ def to_torch(ndarray):
     if type(ndarray).__module__ == 'numpy':
         return torch.from_numpy(ndarray)
     elif not torch.is_tensor(ndarray):
-        raise ValueError("Cannot convert {} to torch tensor"
-                         .format(type(ndarray)))
+        raise ValueError("Cannot convert {} to torch tensor".format(
+            type(ndarray)))
     return ndarray
 
 
@@ -78,7 +78,8 @@ def extract_query_feature(model, img):
     test_transform = transforms.Compose([
         transforms.Resize((384, 128), interpolation=3),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225])
     ])
     img = test_transform(img).unsqueeze(0)
     feature = extract_cnn_feature(model, img)
@@ -101,14 +102,17 @@ def video_preprocessing(model, video, batch_size=32, workers=4):
     test_transform = transforms.Compose([
         transforms.Resize((384, 128), interpolation=3),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225])
     ])
     images_path_list = sorted(glob(os.path.join(video, "cropped") + "/*.jpg"))
 
-    test_loader = dataloader.DataLoader(
-        Preprocessor(images_path_list, root=None, transform=test_transform),
-        batch_size=batch_size, num_workers=workers, pin_memory=True
-    )
+    test_loader = dataloader.DataLoader(Preprocessor(images_path_list,
+                                                     root=None,
+                                                     transform=test_transform),
+                                        batch_size=batch_size,
+                                        num_workers=workers,
+                                        pin_memory=True)
 
     for i, (imgs, fnames) in enumerate(test_loader):
 
@@ -117,7 +121,9 @@ def video_preprocessing(model, video, batch_size=32, workers=4):
             features[fname] = output
 
         if (i + 1) % 10 == 0:
-            print("\rExtract Features: [{} / {}]".format(i + 1, len(test_loader)), end=" ")
+            print("\rExtract Features: [{} / {}]".format(
+                i + 1, len(test_loader)),
+                  end=" ")
 
     features = \
         torch.cat([features[f].unsqueeze(0) for f in images_path_list], 0)
@@ -125,7 +131,8 @@ def video_preprocessing(model, video, batch_size=32, workers=4):
 
     sub_gallery = {}
     for idx in range(len(images_path_list)):
-        image_name = os.path.join(video.split('/')[-1], os.path.basename(images_path_list[idx]))
+        image_name = os.path.join(
+            video.split('/')[-1], os.path.basename(images_path_list[idx]))
         sub_gallery[image_name] = features[idx]
     np.save(os.path.join(video, 'gallery.npy'), sub_gallery)
 
@@ -142,13 +149,16 @@ def calc_similarity(query_feature, gallery):
     nns = []
     result = dict([])
     for idx, key in enumerate(gallery):
-        nns.append((np.matmul(query_feature, gallery.get(key)), key))  # sim, gall_fn
+        nns.append((np.matmul(query_feature,
+                              gallery.get(key)), key))  # sim, gall_fn
     nns.sort()
     nns.reverse()
 
     for _, gallery_fn in nns:
         video_name = gallery_fn.split('/')[0]
-        gallery_fn = 'static/ReID/gallery/{}/cropped/{}'.format(video_name, gallery_fn.split('/')[1])
+        gallery_fn = 'static/ReID/gallery/{}/cropped/{}'.format(
+            video_name,
+            gallery_fn.split('/')[1])
         if video_name not in result.keys():
             result[video_name] = [gallery_fn]
             print('=' * 10, video_name)
