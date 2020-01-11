@@ -1,7 +1,9 @@
+import os
+
 from django.contrib.gis.db import models
 from django.conf import settings
 
-import os
+from app.storage import OverwriteStorage
 
 
 def qrcode_directory_path(instance, filename):
@@ -95,6 +97,10 @@ class Video(models.Model):
 
     # Whether video is preprocessed or not
     is_preprocessed = models.BooleanField(default=False)
+
+    # Video thumbnail
+    thumbnail = models.ImageField(storage=OverwriteStorage(),
+                                  upload_to=video_directory_path)
 
     case = models.ForeignKey(
         Case,

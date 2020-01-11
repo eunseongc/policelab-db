@@ -13,7 +13,8 @@ from .models import Video
 
 @shared_task
 def create_gallery(video_id):
-    asyncio.get_event_loop().run_until_complete(create_gallery_async(video_id))
+    print('create_gallery')
+    # asyncio.get_event_loop().run_until_complete(create_gallery_async(video_id))
 
 
 async def create_gallery_async(video_id):

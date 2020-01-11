@@ -1,3 +1,5 @@
+import os
+
 import graphene
 import qrcode
 
@@ -6,7 +8,7 @@ from io import BytesIO
 from django.conf import settings
 from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
-from django.core.files.base import ContentFile
+from django.core.files.base import ContentFile, File
 from django.contrib.gis.geos import Point
 
 from graphql_relay import from_global_id
@@ -22,6 +24,7 @@ from app.exceptions import InvalidInputError
 from .models import Case, Video
 from .types import LocationType, LocationInput
 from .tasks import create_gallery
+from .utils import generate_thumbnail
 
 
 class CaseNode(DjangoObjectType):
@@ -45,6 +48,9 @@ class VideoNode(DjangoObjectType):
 
     def resolve_upload(self, *args, **kwargs):
         return settings.SERVER_URL_PREFIX + str(self.upload)
+
+    def resolve_thumbnail(self, *args, **kwargs):
+        return settings.SERVER_URL_PREFIX + str(self.thumbnail)
 
     def resolve_location(self, *args, **kwargs):
         if self.location:
@@ -123,7 +129,17 @@ class UploadVideo(graphene.relay.ClientIDMutation):
         if location:
             point = Point(location.longitude, location.latitude, srid=4326)
             video.location = point
-            video.save()
+
+        thumbnail_name = 'thumbnail.jpg'
+        in_filename = os.path.join(settings.MEDIA_ROOT, str(video.upload))
+        out_filename = os.path.join(os.path.dirname(in_filename),
+                                    thumbnail_name)
+
+        generate_thumbnail(in_filename, out_filename, 0, 512)
+
+        video.thumbnail = File(open(out_filename, 'rb'), name=thumbnail_name)
+
+        video.save()
 
         create_gallery.delay(video.id)
 

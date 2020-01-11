@@ -17,3 +17,9 @@ __all__ = [
     'video_preprocessing',
     'calc_similarity',
 ]
+
+from .video import generate_thumbnail
+
+__all__ += [
+    'generate_thumbnail',
+]
