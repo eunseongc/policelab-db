@@ -40,6 +40,9 @@ services:
       - USER=policelab;policelab;${UID};policelab;${GID}
     command: ['-p']
 
+  redis:
+    image: redis:5.0.7
+
   policelab-server:
     build: .
     volumes:
