@@ -9,11 +9,12 @@ from django.utils.translation import gettext_lazy as _
 from django.core.files.base import ContentFile
 from django.contrib.gis.geos import Point
 
-from rx import Observable
+from graphql_relay import from_global_id
 
 from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
 from graphene_file_upload.scalars import Upload
+from graphene_subscriptions.events import UPDATED, CREATED
 
 from app.decorators import login_required, method_decorator
 from app.exceptions import InvalidInputError
@@ -47,7 +48,8 @@ class VideoNode(DjangoObjectType):
 
     def resolve_location(self, *args, **kwargs):
         if self.location:
-            return LocationType(latitude=self.location.y, longitude=self.location.x)
+            return LocationType(latitude=self.location.y,
+                                longitude=self.location.x)
         return None
 
 
@@ -76,7 +78,8 @@ class CreateCase(graphene.relay.ClientIDMutation):
         text = input.get('text')
         token = get_random_string(length=16)
 
-        qr_img = qrcode.make(settings.WEB_URL_PREFIX + 'case/upload/{}'.format(token))
+        qr_img = qrcode.make(settings.WEB_URL_PREFIX +
+                             'case/upload/{}'.format(token))
 
         f = BytesIO()
         qr_img.save(f, format='png')
@@ -128,13 +131,16 @@ class UploadVideo(graphene.relay.ClientIDMutation):
 
 
 class Subscription:
+    case_video = graphene.Field(CaseNode, id=graphene.ID(required=True))
 
-    count_seconds = graphene.Int(up_to=graphene.Int())
+    @method_decorator(login_required)
+    def resolve_case_video(root, info, **input):
+        _id = int(from_global_id(input.get('id'))[1])
 
-    def resolve_count_seconds(root, info, up_to=5):
-        return Observable.interval(1000)\
-                         .map(lambda i: "{0}".format(i))\
-                         .take_while(lambda i: int(i) <= up_to)
+        return root.filter(
+            lambda event: event.operation in [UPDATED, CREATED] and isinstance(
+                event.instance, Video) and event.instance.case.id == _id).map(
+                    lambda _: Case.objects.get(id=_id))
 
 
 class Mutation:
