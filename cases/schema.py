@@ -130,6 +130,11 @@ class UploadVideo(graphene.relay.ClientIDMutation):
         return UploadVideo(video=video)
 
 
+class Mutation:
+    create_case = CreateCase.Field()
+    upload_video = UploadVideo.Field()
+
+
 class Subscription:
     case_video = graphene.Field(CaseNode, id=graphene.ID(required=True))
 
@@ -141,8 +146,3 @@ class Subscription:
             lambda event: event.operation in [UPDATED, CREATED] and isinstance(
                 event.instance, Video) and event.instance.case.id == _id).map(
                     lambda _: Case.objects.get(id=_id))
-
-
-class Mutation:
-    create_case = CreateCase.Field()
-    upload_video = UploadVideo.Field()
