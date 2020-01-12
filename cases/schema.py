@@ -121,8 +121,8 @@ class UploadVideo(graphene.relay.ClientIDMutation):
         if case.is_expired:
             raise InvalidInputError(message=_('token is expired'))
 
-        video = Video.objects.create(case=case)
-        video.upload.save(input.get('upload').name, input.get('upload'))
+        video = Video(case=case)
+        video.upload = File(input.get('upload'), name=input.get('upload').name)
 
         location = input.get('location')
 
