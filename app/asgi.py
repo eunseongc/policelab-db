@@ -3,7 +3,7 @@ import django
 
 from django.urls import re_path
 from channels.routing import ProtocolTypeRouter, URLRouter
-from graphene_subscriptions.consumers import GraphqlSubscriptionConsumer
+from .consumers import GraphqlSubscriptionConsumer
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
 
