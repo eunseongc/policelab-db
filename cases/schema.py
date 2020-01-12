@@ -131,7 +131,7 @@ class UploadVideo(graphene.relay.ClientIDMutation):
             video.location = point
 
         thumbnail_name = 'thumbnail.jpg'
-        in_filename = os.path.join(settings.MEDIA_ROOT, str(video.upload))
+        in_filename = input.get('upload').file.name
         out_filename = os.path.join(os.path.dirname(in_filename),
                                     thumbnail_name)
 

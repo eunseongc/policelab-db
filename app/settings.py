@@ -203,3 +203,9 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# File upload handler
+
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
