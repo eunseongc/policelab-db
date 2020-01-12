@@ -36,6 +36,7 @@ class GraphqlSubscriptionConsumer(SyncConsumer):
 
     def websocket_disconnect(self, message):
         self.send({"type": "websocket.close", "code": 1000})
+        self.dispose()
         raise StopConsumer()
 
     def websocket_receive(self, message):
@@ -62,14 +63,13 @@ class GraphqlSubscriptionConsumer(SyncConsumer):
 
             if hasattr(result, "subscribe"):
                 self.disposable = result.subscribe(
-                    functools.partial(self._send_result, id))
+                    functools.partial(self._send_result, id),
+                    on_completed=functools.partial(self._send_complete, id))
             else:
                 self._send_result(id, result)
 
         elif request["type"] == "stop":
-            if getattr(self, "disposable") is not None:
-                self.disposable.dispose()
-                self.disposable = None
+            self.dispose()
 
     def signal_fired(self, message):
         stream.on_next(SubscriptionEvent.from_dict(message["event"]))
@@ -90,3 +90,17 @@ class GraphqlSubscriptionConsumer(SyncConsumer):
                 },
             }),
         })
+
+    def _send_complete(self, id):
+        self.send({
+            "type": "websocket.send",
+            "text": json.dumps({
+                "id": id,
+                "type": "complete",
+            })
+        })
+
+    def dispose(self):
+        if getattr(self, "disposable") is not None:
+            self.disposable.dispose()
+            self.disposable = None
