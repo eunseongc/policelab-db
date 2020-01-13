@@ -103,6 +103,6 @@ class GraphqlSubscriptionConsumer(SyncConsumer):
         })
 
     def dispose(self):
-        if getattr(self, "disposable") is not None:
+        if getattr(self, "disposable", None) is not None:
             self.disposable.dispose()
             self.disposable = None
