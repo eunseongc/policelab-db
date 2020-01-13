@@ -93,7 +93,7 @@ class Video(models.Model):
     location = models.PointField(blank=True, null=True)
 
     # Time information of the video
-    rec_date = models.DateTimeField('date recorded', blank=True, null=True)
+    rec_date = models.DateTimeField(auto_now_add=True)
 
     # Whether video is preprocessed or not
     is_preprocessed = models.BooleanField(default=False)
