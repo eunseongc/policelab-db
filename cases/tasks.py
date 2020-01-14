@@ -14,16 +14,19 @@ from .models import Video
 @shared_task
 def create_gallery(video_id):
     print('create_gallery')
-    # asyncio.get_event_loop().run_until_complete(create_gallery_async(video_id))
+    video = Video.objects.get(id=video_id)
+    path = str(video.upload)
+    print(f"video_path: {path}")
+    # asyncio.get_event_loop().run_until_complete(create_gallery_async(video_id, path))
 
 
-async def create_gallery_async(video_id):
+async def create_gallery_async(video_id, path):
     async with websockets.connect(settings.WEBSOCKET_SERVER) as websocket:
         data = {
             'action': 'create_gallery',
             'video': {
                 'id': video_id,
-                'path': 'data/case/3/video/1/SampleVideo_1280x720_2mb.mp4',
+                'path': path,
             },
         }
 
