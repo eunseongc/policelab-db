@@ -187,7 +187,7 @@ CELERY_RESULT_BACKEND = 'django-db'
 
 # Websocket server
 
-WEBSOCKET_SERVER = 'ws://localhost:8765'
+WEBSOCKET_SERVER = 'ws://115.145.173.230:8765'
 
 # ASGI APPLICATION
 
