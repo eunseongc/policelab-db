@@ -138,6 +138,7 @@ class Image(models.Model):
 
     original = models.ImageField(upload_to=image_directory_path)
     improvement = models.ImageField(
+        storage=OverwriteStorage(),
         upload_to=image_directory_path,
         blank=True,
         null=True,
