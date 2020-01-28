@@ -31,6 +31,16 @@ def improve_resolution(image_id, obj_type, location):
     )
 
 
+@shared_task
+def query_feature_extraction(image_id):
+    print('query_feature_extraction')
+    image = Image.objects.get(id=image_id)
+    path = str(image.original)
+    asyncio.get_event_loop().run_until_complete(
+        query_feature_extraction_async(image_id, path),
+    )
+
+
 async def create_gallery_async(video_id, path):
     async with websockets.connect(settings.WEBSOCKET_SERVER) as websocket:
         data = {
@@ -52,10 +62,33 @@ async def create_gallery_async(video_id, path):
         await sync_to_async(video.save)()
 
 
+async def query_feature_extraction_async(image_id, path):
+    async with websockets.connect(settings.WEBSOCKET_SERVER) as websocket:
+        data = {
+            'action': 'query_feature',
+            'image': {
+                'id': image_id,
+                'path': path,
+            },
+        }
+
+        await websocket.send(json.dumps(data))
+        response = json.loads(await websocket.recv())
+
+    if response['ok']:
+        await sync_to_async(close_old_connections)()
+        image = await sync_to_async(Image.objects.get)(id=response['image_id'])
+
+        query_path = os.path.join(settings.MEDIA_ROOT, response['path'])
+        image.query_feature = File(open(query_path, 'rb'), name=image_id + '_feature.npy')
+
+        await sync_to_async(image.save)()
+
+
 async def improve_resolution_async(image_id, obj_type, location, path):
     async with websockets.connect(settings.WEBSOCKET_SERVER) as websocket:
         data = {
-            'action': 'improve_resolution',
+            'action': 'super_resolution',
             'type': obj_type,
             'image': {
                 'id': image_id,
@@ -72,6 +105,6 @@ async def improve_resolution_async(image_id, obj_type, location, path):
         image = await sync_to_async(Image.objects.get)(id=response['image_id'])
 
         image_path = os.path.join(settings.MEDIA_ROOT, response['path'])
-        image.improvement = File(open(image_path, 'rb'), name='improvement.jpg')
+        image.improvement = File(open(image_path, 'rb'), name=image_id + 'SR.jpg')
 
         await sync_to_async(image.save)()
