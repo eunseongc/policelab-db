@@ -1,5 +1,6 @@
 import os
 
+from datetime import datetime
 from django.contrib.gis.db import models
 from django.conf import settings
 
@@ -93,7 +94,7 @@ class Video(models.Model):
     location = models.PointField(blank=True, null=True)
 
     # Time information of the video
-    rec_date = models.DateTimeField(auto_now_add=True)
+    rec_date = models.DateTimeField(default=datetime.now)
 
     # Whether video is preprocessed or not
     is_preprocessed = models.BooleanField(default=False)

@@ -3,6 +3,7 @@ import os
 import graphene
 import qrcode
 
+from datetime import datetime
 from io import BytesIO
 
 from django.conf import settings
@@ -110,6 +111,7 @@ class UploadVideo(graphene.relay.ClientIDMutation):
     class Input:
         token = graphene.String(required=True)
         location = graphene.Field(LocationInput)
+        rec_date = graphene.DateTime()
         upload = Upload()
 
     def mutate_and_get_payload(self, info, **input):
@@ -125,10 +127,16 @@ class UploadVideo(graphene.relay.ClientIDMutation):
         video.upload = File(input.get('upload'), name=input.get('upload').name)
 
         location = input.get('location')
+        rec_date = input.get('rec_date')
 
         if location:
             point = Point(location.longitude, location.latitude, srid=4326)
             video.location = point
+
+        if rec_date is None:
+            rec_date = datetime.now()
+
+        video.rec_date = rec_date
 
         thumbnail_name = 'thumbnail.jpg'
         in_filename = input.get('upload').file.name

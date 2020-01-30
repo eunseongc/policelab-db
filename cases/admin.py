@@ -12,7 +12,7 @@ class CaseAdmin(admin.ModelAdmin):
 
 @admin.register(Video)
 class videoAdmin(admin.ModelAdmin):
-    list_display = ['case_name', 'video_name', 'uploaded_at', 'is_preprocessed']
+    list_display = ['case_name', 'video_name', 'uploaded_at', 'rec_date', 'is_preprocessed']
 
     def case_name(self, obj):
         return obj.case.name
