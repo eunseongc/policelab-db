@@ -1,3 +1,5 @@
+import asyncio
+from asgiref.sync import async_to_sync
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib import auth
@@ -13,14 +15,14 @@ import numpy as np
 import os
 import logging
 from .utils import calc_similarity
-from .tasks import query_feature_extraction, improve_resolution
-from django.core.files.base import File
+from .tasks import query_feature_extraction_async, improve_resolution_async
+from django.core.files.base import File, ContentFile
 from django.conf import settings
 
 # Create your views here.
 
 
-logger = logging.getLogger('my_logger')
+logger = logging.getLogger('mylogger')
 
 
 def encode_image(binary_data):
@@ -32,32 +34,23 @@ def decode_image(base64_data):
 
 
 def search_person(request):
-    image = request.POST.get('image')
-
-    intra_prefix = '/var/www/'
-    video_path_prefix_1 = os.path.join(intra_prefix, 'data/case/')
-    video_path_prefix_2 = '/video'
-    gallery_path_postfix = 'gallery.npy'
-    image_path_prefix = 'image'
+    image = request.FILES.get('image')
+    video_id = request.POST.get('video_id')
 
     ### Store original image
-    image_video_id = request.POST.get('video') # 형식 검토 필요
-    image_video = Video.objects.get(id=image_video_id)
-    image_name = str(len(image_video.images)) + ".jpg"
+    video = Video.objects.get(id=video_id)
 
-    binary_image = decode_image(image)
-
-    img_obj = Image.objects.create(video=image_video)
-
-    # binary_image bytes도 받는지 체크 필요
-    img_obj.original = File(binary_image, name=image_name)
+    img_obj = Image.objects.create(video=video)
+    img_obj.original = File(image, name=image.name)
     img_obj.save()
+
     ###
 
     ### Load query feature
-    query_feature_extraction(img_obj.id)
+    async_to_sync(query_feature_extraction_async)(img_obj.id, str(img_obj.original))
 
     # img_obj.query_feature가 reload 자동으로 되는지  체크 필요
+    img_obj.refresh_from_db()
     query_feature_path = img_obj.query_feature
 
     query_feature = np.load(os.path.join(settings.MEDIA_ROOT, str(query_feature_path)))
@@ -136,34 +129,30 @@ def search_person(request):
 
 
 def image_resolution(request):
-    image = request.POST.get('image')                   # BASE64 str of full image
+    image = request.FILES.get('image')                   # BASE64 str of full image
     query_type = request.POST.get('type')               # human, plate
+    video_id = request.POST.get('video_id')
+
     location = None
     if query_type == 'plate':
         location = request.POST.get('location').split(',')  # left top x, y // left bottom x, y // right top x, y // right bottom x, y
 
     ### Store original image
-    image_video_id = request.POST.get('video')  # 형식 검토 필요
-    image_video = Video.objects.get(id=image_video_id)
-    image_name = str(len(image_video.images)) + ".jpg"
+    video = Video.objects.get(id=video_id)
 
-    binary_image = decode_image(image)
-
-    img_obj = Image.objects.create(video=image_video)
-    img_obj.original = File(binary_image, name=image_name)
+    img_obj = Image.objects.create(video=video)
+    img_obj.original = File(image, name=image.name)
     img_obj.save()
     ###
 
     ### image resolution
-    improve_resolution(img_obj.id, query_type, location)
-
-    result_image = None
-    with open(image.improvement, "rb") as f:
-        result_image = base64.b64encode(f.read())
-        f.close()
+    async_to_sync(improve_resolution_async)(img_obj.id, query_type, location, str(img_obj.original))
+    img_obj.refresh_from_db()
+    result_img = base64.b64encode(img_obj.improvement.read())
+    # logger.error(f'result_img: {result_img}')
     ###
 
-    data = {"result": str(result_image)}
+    data = {"result": result_img.decode('utf-8')}
 
     return JsonResponse(data, safe=False)
 

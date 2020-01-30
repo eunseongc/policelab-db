@@ -146,23 +146,34 @@ def calc_similarity(query_feature, gallery):
     :param gallery: collection of gallery feature vectors (dict)
     :return: result (dict)
     """
+    
+    # gallery.npy
+    #   key: MOT_2019_02_14_16_58_08_F/0008_0000005.jpg
+    #   value: 2048-dim feature vector
+    
     nns = []
     result = dict([])
+    
+    # needs refactoring
     for idx, key in enumerate(gallery):
-        nns.append((np.matmul(query_feature,
-                              gallery.get(key)), key))  # sim, gall_fn
-    nns.sort()
-    nns.reverse()
+        nns.append((np.multiply(query_feature, gallery.get(key)).sum(), key))
+    nns = sorted(nns, reverse=True)
 
-    for _, gallery_fn in nns:
-        video_name = gallery_fn.split('/')[0]
-        gallery_fn = 'static/ReID/gallery/{}/cropped/{}'.format(
-            video_name,
-            gallery_fn.split('/')[1])
-        if video_name not in result.keys():
-            result[video_name] = [gallery_fn]
-            print('=' * 10, video_name)
+    # key : data/case/CASE ID/video/VIDEO ID/preprocessed/cropped/IMAGE FILE
+    for similarity, image_file in nns:
+        # image_file : data/case/CASE ID/video/VIDEO ID/preprocessed/cropped/IMAGE FILE
+        video_id = image_file.split('/')[4]
+        
+        # file_name_array = image_file.split('/')
+        # video_name = file_name_array[0]
+        # image_name = file_name_array[1]
+        
+        # image_file = '{}/cropped/{}'.format(video_name, image_name)
+
+        if video_id not in result.keys():
+            result[video_id] = [(image_file, similarity)]
+
         else:
-            result[video_name].append(gallery_fn)
+            result[video_id].append((image_file, similarity))
 
     return result
