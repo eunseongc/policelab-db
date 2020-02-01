@@ -55,7 +55,6 @@ def search_person(request):
 
     query_feature = np.load(os.path.join(settings.MEDIA_ROOT, str(query_feature_path)))
     ###
-
     ### Search image for all videos
     cases = Case.objects.all()
 
@@ -65,23 +64,23 @@ def search_person(request):
 
         # query_feature_path = query_feature_path_prefix + str(case.id) + query_feature_path_postfix
         # video_path_prefix: '/var/www/data/case/CASE ID/video'
-        video_path_prefix = video_path_prefix_1 + str(case_id) + video_path_prefix_2
+        video_path_prefix = os.path.join('data/case', str(case_id), 'video')
         videos = case.videos
 
         # Set gallery from video list
         gallery = {}
         for video in videos.all():
+            video_id = video.id
             # query_feature_path = query_feature_path_prefix + str(case.id) + query_feature_path_postfix
             # video_path_prefix: '/var/www/data/case/CASE ID/video'
-            # gallery_video_list.append(str(video.id) + "/preprocessed")
-            processed_path = os.path.join(video_path_prefix, str(video.id), "preprocessed")
-            gallery_path = os.path.join(processed_path, gallery_path_postfix)
-            crop_path_client = os.path.join(*processed_path.split('/')[3:], 'cropped')
-            sub_gallery = np.load(gallery_path, allow_pickle=True).item()   # dictionary
+            processed_path = os.path.join(video_path_prefix, str(video_id))
+            gallery_path = os.path.join(processed_path, 'gallery', 'gallery.npy')
+            crop_path_client = os.path.join(processed_path, 'cropped')
+            sub_gallery = np.load(os.path.join(settings.MEDIA_ROOT, gallery_path), allow_pickle=True).item()   # dictionary
 
             #####
             # key : data/case/CASE ID/video/VIDEO ID/preprocessed/cropped/IMAGE FILE 로 변환
-            sub_gallery = {os.path.join(crop_path_client, k.split('/')[1]): v for k, v in sub_gallery.items()}
+            sub_gallery = {os.path.join(settings.MEDIA_ROOT, crop_path_client, k.split('/')[1]): v for k, v in sub_gallery.items()}
             #####
 
             gallery.update(sub_gallery)
@@ -93,8 +92,9 @@ def search_person(request):
             crop_result = []
 
             result_list_video = result_dict[video_id]
-            video = list(Video.objects.filter(id=video_id))[0]
-            thumbnail_path = os.path.join(video_path_prefix, str(video_id), 'thumbnail.jpg')
+            video = Video.objects.get(id=video_id)
+            video_path = os.path.join(settings.MEDIA_ROOT, video_path_prefix, str(video_id))
+            thumbnail_path = os.path.join(video_path, 'thumbnail.jpg')
             with open(thumbnail_path, 'rb') as f:
                 thumbnail64 = encode_image(f.read()).decode('utf-8')
 
@@ -104,8 +104,9 @@ def search_person(request):
                 # file_path = os.path.join(video_path_prefix, str(video.id), file_path_postfix)
 
                 image_file, similarity = result_list_video[i]
-
-                with open(os.path.join(intra_prefix, image_file), 'rb') as data:
+                logger.debug(f'image_file: {image_file}')
+                gallery_path = os.path.join(video_path, 'gallery')
+                with open(os.path.join(gallery_path, 'cropped', os.path.basename(image_file)), 'rb') as data:
                     file_binary = data.read()
 
                 binary_data = encode_image(file_binary)
@@ -113,7 +114,7 @@ def search_person(request):
                 image_name = image_file.split('/')[-1]
                 second = int(image_name.split('_')[0])
 
-                crop_result.append({"image": binary_data.decode('utf-8'), "time": second, "similarity": similarity})
+                crop_result.append({"image": binary_data.decode('utf-8'), "time": second, "similarity": str(similarity)})
 
             res_dict = {}
             res_dict.update(extract_video_info_dict(video))

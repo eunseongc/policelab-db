@@ -146,28 +146,27 @@ def calc_similarity(query_feature, gallery):
     :param gallery: collection of gallery feature vectors (dict)
     :return: result (dict)
     """
-    
+
     # gallery.npy
     #   key: MOT_2019_02_14_16_58_08_F/0008_0000005.jpg
     #   value: 2048-dim feature vector
-    
+
     nns = []
     result = dict([])
-    
+
     # needs refactoring
     for idx, key in enumerate(gallery):
         nns.append((np.multiply(query_feature, gallery.get(key)).sum(), key))
     nns = sorted(nns, reverse=True)
 
-    # key : data/case/CASE ID/video/VIDEO ID/preprocessed/cropped/IMAGE FILE
+    # key : /var/www/data/case/CASE ID/video/VIDEO ID/gallery/cropped/IMAGE FILE
     for similarity, image_file in nns:
-        # image_file : data/case/CASE ID/video/VIDEO ID/preprocessed/cropped/IMAGE FILE
-        video_id = image_file.split('/')[4]
-        
+        video_id = image_file.split('/')[7]
+
         # file_name_array = image_file.split('/')
         # video_name = file_name_array[0]
         # image_name = file_name_array[1]
-        
+
         # image_file = '{}/cropped/{}'.format(video_name, image_name)
 
         if video_id not in result.keys():
