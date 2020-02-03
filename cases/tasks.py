@@ -129,7 +129,7 @@ async def improve_resolution_async(image_id, obj_type, location, path):
         image = await sync_to_async(Image.objects.get)(id=response['image_id'])
 
         image_path = os.path.join(settings.MEDIA_ROOT, response['path'])
-        
+
         image.improvement = File(open(image_path, 'rb'), name=os.path.basename(image_path))
 
         await sync_to_async(close_old_connections)()

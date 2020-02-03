@@ -1,7 +1,13 @@
 import os
+import asyncio
+import json
 
 import graphene
 import qrcode
+
+import numpy as np
+
+from asgiref.sync import async_to_sync
 
 from datetime import datetime
 from io import BytesIO
@@ -12,7 +18,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.files.base import ContentFile, File
 from django.contrib.gis.geos import Point
 
-from graphql_relay import from_global_id
+from graphql_relay import from_global_id, to_global_id
 
 from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
@@ -22,10 +28,10 @@ from graphene_subscriptions.events import UPDATED, CREATED
 from app.decorators import login_required, method_decorator
 from app.exceptions import InvalidInputError
 
-from .models import Case, Video
+from .models import Case, Video, Image
 from .types import LocationType, LocationInput
-from .tasks import create_gallery
-from .utils import generate_thumbnail
+from .tasks import create_gallery, improve_resolution_async, query_feature_extraction_async
+from .utils import generate_thumbnail, calc_similarity
 
 
 class CaseNode(DjangoObjectType):
@@ -58,6 +64,19 @@ class VideoNode(DjangoObjectType):
             return LocationType(latitude=self.location.y,
                                 longitude=self.location.x)
         return None
+
+
+class ImageNode(DjangoObjectType):
+    class Meta:
+        model = Image
+        interfaces = (graphene.relay.Node, )
+        filter_fields = []
+
+    def resolve_original(self, *args, **kwargs):
+        return settings.SERVER_URL_PREFIX + str(self.original)
+
+    def resolve_improvement(self, *args, **kwargs):
+        return settings.SERVER_URL_PREFIX + str(self.improvement)
 
 
 class Query:
@@ -124,7 +143,9 @@ class UploadVideo(graphene.relay.ClientIDMutation):
             raise InvalidInputError(message=_('token is expired'))
 
         video = Video.objects.create(case=case)
-        video.upload = File(input.get('upload'), name=input.get('upload').name)
+        ext = input.get('upload').name.rpartition('.')[-1]
+        video_name = 'video.' + ext
+        video.upload = File(input.get('upload'), name=video_name)
 
         location = input.get('location')
         rec_date = input.get('rec_date')
@@ -154,9 +175,91 @@ class UploadVideo(graphene.relay.ClientIDMutation):
         return UploadVideo(video=video)
 
 
+class SuperResolution(graphene.relay.ClientIDMutation):
+    image = graphene.Field(ImageNode, required=True)
+
+    class Input:
+        video_id = graphene.ID(required=True)
+        image_type = graphene.String(required=True)
+        points = graphene.List(graphene.Int)
+        upload = Upload()
+
+    def mutate_and_get_payload(self, info, **input):
+        video_id = int(from_global_id(input.get('video_id'))[1])
+        image_type = input.get('image_type')
+        upload = input.get('upload')
+        points = input.get('points')
+
+        video = Video.objects.get(id=video_id)
+
+        img = Image.objects.create(video=video)
+        img.original = File(upload, name='image.jpg')
+        img.save()
+
+        async_to_sync(improve_resolution_async)(img.id, image_type, points, str(img.original))
+        img.refresh_from_db()
+
+        return SuperResolution(image=img)
+
+
+class SearchPerson(graphene.relay.ClientIDMutation):
+    result = graphene.JSONString()
+
+    class Input:
+        video_id = graphene.ID(required=True)
+        upload = Upload()
+
+    def mutate_and_get_payload(self, info, **input):
+        video_id = int(from_global_id(input.get('video_id'))[1])
+        image = input.get('upload')
+
+        video = Video.objects.get(id=video_id)
+
+        img = Image.objects.create(video=video)
+        img.original = File(image, name='image.jpg')
+        img.save()
+
+        async_to_sync(query_feature_extraction_async)(img.id, str(img.original))
+
+        img.refresh_from_db()
+
+        query_feature = np.load(os.path.join(settings.MEDIA_ROOT, str(img.query_feature)))
+
+        result = []
+        gallery = {}
+        for video in Video.objects.all():
+            video_dir = os.path.dirname(os.path.join(settings.MEDIA_ROOT, str(video.upload)))
+            crop_dir = os.path.join(video_dir, 'gallery', 'cropped')
+            gallery_path = os.path.join(video_dir, 'gallery', 'gallery.npy')
+
+            if not os.path.exists(gallery_path):
+                continue
+
+            sub_gallery = np.load(gallery_path, allow_pickle=True).item()
+            sub_gallery = {os.path.join(crop_dir, k.split('/')[1]): v for k, v in sub_gallery.items()}
+
+            gallery.update(sub_gallery)
+
+        for video_id, videos in calc_similarity(query_feature=query_feature, gallery=gallery).items():
+            crop_results = []
+
+            for i in range(min(5, len(videos))):
+                image, similarity = videos[i]
+                crop_results.append({'image': image.replace('/var/www/', settings.SERVER_URL_PREFIX), 'similarity': similarity.item()})
+
+            video = Video.objects.get(id=video_id)
+            thumbnail = settings.SERVER_URL_PREFIX + str(video.thumbnail)
+
+            result.append({'video_id': to_global_id(VideoNode.__name__, video_id), 'thumbnail': thumbnail, 'crop': crop_results})
+
+        return SearchPerson(result=json.dumps(result))
+
+
 class Mutation:
     create_case = CreateCase.Field()
     upload_video = UploadVideo.Field()
+    super_resolution = SuperResolution.Field()
+    search_person = SearchPerson.Field()
 
 
 class Subscription:
