@@ -82,6 +82,7 @@ class ImageNode(DjangoObjectType):
 class Query:
     case = graphene.Field(CaseNode, token=graphene.String(required=True))
     videos = DjangoFilterConnectionField(VideoNode)
+    bookmark = graphene.JSONString(video_id=graphene.ID(required=True))
 
     def resolve_case(self, info, **input):
         try:
@@ -89,6 +90,34 @@ class Query:
             return case
         except Case.DoesNotExist:
             return None
+
+    def resolve_bookmark(self, info, **input):
+        video_id = int(from_global_id(input.get('video_id'))[1])
+
+        video = Video.objects.get(id=video_id)
+        summary_path = os.path.join(
+                settings.MEDIA_ROOT,
+                os.path.dirname(str(video.upload)),
+                'gallery', 'summary.json',
+        )
+
+        with open(summary_path, 'r', encoding='utf8') as f:
+            summary = json.load(f)
+
+        bookmark = []
+        for frame, content in summary.items():
+            if not content['key_frame']:
+                continue
+
+            if isinstance(content['content'], list):
+                new_content = content['content']
+            else:
+                new_content = [content['content']]
+
+            second = int(frame.split('_')[-1].split('.')[0])
+            bookmark.append({'time': second, 'content': new_content})
+
+        return json.dumps(bookmark)
 
 
 class CreateCase(graphene.relay.ClientIDMutation):
