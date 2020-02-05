@@ -171,20 +171,20 @@ class UploadVideo(graphene.relay.ClientIDMutation):
         if case.is_expired:
             raise InvalidInputError(message=_('token is expired'))
 
-        video = Video.objects.create(case=case)
-        ext = input.get('upload').name.rpartition('.')[-1]
-        video_name = 'video.' + ext
-        video.upload = File(input.get('upload'), name=video_name)
-
         location = input.get('location')
         rec_date = input.get('rec_date')
+
+        if rec_date is None:
+            rec_date = datetime.now()
+
+        video = Video.objects.create(case=case)
+        ext = input.get('upload').name.rpartition('.')[-1]
+        video_name = rec_date.strftime("%Y-%m-%d_%H:%M") + '.' + ext
+        video.upload = File(input.get('upload'), name=video_name)
 
         if location:
             point = Point(location.longitude, location.latitude, srid=4326)
             video.location = point
-
-        if rec_date is None:
-            rec_date = datetime.now()
 
         video.rec_date = rec_date
 
@@ -222,7 +222,7 @@ class SuperResolution(graphene.relay.ClientIDMutation):
         video = Video.objects.get(id=video_id)
 
         img = Image.objects.create(video=video)
-        img.original = File(upload, name='image.jpg')
+        img.original = File(upload, name='image.png')
         img.save()
 
         async_to_sync(improve_resolution_async)(img.id, image_type, points, str(img.original))
@@ -245,7 +245,7 @@ class SearchPerson(graphene.relay.ClientIDMutation):
         video = Video.objects.get(id=video_id)
 
         img = Image.objects.create(video=video)
-        img.original = File(image, name='image.jpg')
+        img.original = File(image, name='image.png')
         img.save()
 
         async_to_sync(query_feature_extraction_async)(img.id, str(img.original))
@@ -256,7 +256,7 @@ class SearchPerson(graphene.relay.ClientIDMutation):
 
         result = []
         gallery = {}
-        for video in Video.objects.all():
+        for video in video.case.videos.all():
             video_dir = os.path.dirname(os.path.join(settings.MEDIA_ROOT, str(video.upload)))
             crop_dir = os.path.join(video_dir, 'gallery', 'cropped')
             gallery_path = os.path.join(video_dir, 'gallery', 'gallery.npy')
@@ -274,12 +274,28 @@ class SearchPerson(graphene.relay.ClientIDMutation):
 
             for i in range(min(5, len(videos))):
                 image, similarity = videos[i]
-                crop_results.append({'image': image.replace('/var/www/', settings.SERVER_URL_PREFIX), 'similarity': similarity.item()})
+                time = int(os.path.basename(image).partition('_')[0])
+
+                if similarity <= 0.3:
+                    continue
+
+                crop_results.append({
+                    'image': image.replace('/var/www/', settings.SERVER_URL_PREFIX),
+                    'time': time,
+                    'similarity': similarity.item(),
+               })
 
             video = Video.objects.get(id=video_id)
             thumbnail = settings.SERVER_URL_PREFIX + str(video.thumbnail)
 
-            result.append({'video_id': to_global_id(VideoNode.__name__, video_id), 'thumbnail': thumbnail, 'crop': crop_results})
+            if len(crop_results) == 0:
+                continue
+
+            result.append({
+                'video_id': to_global_id(VideoNode.__name__, video_id),
+                'thumbnail': thumbnail,
+                'crop': crop_results,
+            })
 
         return SearchPerson(result=json.dumps(result))
 
