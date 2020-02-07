@@ -7,6 +7,7 @@ import qrcode
 
 import numpy as np
 
+from collections import OrderedDict
 from asgiref.sync import async_to_sync
 
 from datetime import datetime
@@ -116,6 +117,58 @@ class Query:
 
             second = int(frame.split('_')[-1].split('.')[0])
             bookmark.append({'time': second, 'content': new_content})
+
+        # bookmark shape
+        # [
+        #   {'time': 1, 'content': ['person', 'truck', 'car']},
+        #   {'time': 2, 'content': ['person']},
+        # ]
+
+        # content_time shape
+        # {
+        #   'person': [1, 2, ...],
+        #   'truck': [1, ...],
+        #   'car': [1, ...],
+        # }
+
+        content_time = {}
+        for item in bookmark:
+            for content in item['content']:
+                if content not in content_time:
+                    content_time[content] = []
+                content_time[content].append(item['time'])
+
+        # Remove consecutive time
+        summary_content_time = {}
+        for content, time_list in content_time.items():
+            summary_time = []
+            con = -1
+
+            for time in time_list:
+                if con + 1 != time:
+                    summary_time.append(time)
+                    con = time
+                    continue
+                con += 1
+
+            summary_content_time[content] = summary_time
+
+        # grouping content by time
+        # {
+        #   1: ['person', 'truck', 'car'],
+        #   2: ['person'],
+        # }
+        group_content_time = OrderedDict()
+        for content, time_list in summary_content_time.items():
+            for time in time_list:
+                if time not in group_content_time:
+                    group_content_time[time] = []
+                group_content_time[time].append(content)
+        group_content_time = OrderedDict(sorted(group_content_time.items(), key=lambda item: item[0]))
+
+        bookmark = []
+        for time, content_list in group_content_time.items():
+            bookmark.append({'time': time, 'content': content_list})
 
         return json.dumps(bookmark)
 
