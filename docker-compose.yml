@@ -15,9 +15,9 @@ services:
   rabbitmq:
     image: rabbitmq:3.8.2
     environment:
-      - 'RABBITMQ_DEFAULT_USER=policelab'
-      - 'RABBITMQ_DEFAULT_PASS=policelab'
-      - 'RABBITMQ_DEFAULT_VHOST=policelab'
+      - RABBITMQ_DEFAULT_USER=policelab
+      - RABBITMQ_DEFAULT_PASS=policelab
+      - RABBITMQ_DEFAULT_VHOST=policelab
 
   mariadb:
     image: mariadb:10.4.11-bionic
@@ -25,7 +25,8 @@ services:
       - ${MARIA_DATA_DIR}:/var/lib/mysql
       - ./conf.d/mariadb:/etc/mysql/conf.d:ro
     environment:
-      - 'MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}'
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
 
   samba:
     image: dperson/samba
@@ -44,7 +45,11 @@ services:
     image: redis:5.0.7
 
   policelab-server:
-    build: .
+    build:
+      context: .
+      args:
+        - UID=${UID}
+        - GID=${GID}
     volumes:
       - ${WWW_DIR}:/var/www
       - ${APP_SRC_DIR}:/opt/policelab-server
@@ -53,8 +58,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     environment:
-      - 'UID=${UID}'
-      - 'GID=${GID}'
+      - UID=${UID}
+      - GID=${GID}
     depends_on:
       - mariadb
       - rabbitmq

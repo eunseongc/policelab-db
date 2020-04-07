@@ -1,9 +1,12 @@
 FROM ubuntu:18.04
 
+ARG UID=1000
+ARG GID=1000
+
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
-ENV UID 1000
-ENV GID 1000
+ENV UID $UID
+ENV GID $GID
 
 ADD . /opt/policelab-server
 WORKDIR /opt/policelab-server
