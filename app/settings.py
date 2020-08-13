@@ -153,6 +153,10 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch(
 AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
     "ou=groups,dc=example,dc=org", ldap.SCOPE_SUBTREE, "(objectClass=groupOfNames)"
 )
+AUTH_LDAP_USER_FLAGS_BY_GROUP = {
+    "is_staff": "cn=admin,ou=groups,dc=example,dc=org",
+    "is_superuser": "cn=admin,ou=groups,dc=example,dc=org"
+}
 AUTH_LDAP_GROUP_TYPE = GroupOfNamesType(name_attr="cn")
 AUTH_LDAP_ALWAYS_UPDATE_USER = True
 AUTH_LDAP_FIND_GROUP_PERMS = True
