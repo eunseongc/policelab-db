@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import ldap
+
+from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,7 +28,7 @@ SECRET_KEY = '93ce-4oo=c@e@b5ryizpze(19t#vdz7y5t=z7s=svq!aev42c('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '115.145.173.142']
+ALLOWED_HOSTS = ['localhost', '115.145.135.72']
 
 # Application definition
 
@@ -133,13 +137,36 @@ STATIC_URL = '/static/'
 # Custom auth model
 AUTH_USER_MODEL = 'accounts.User'
 
+AUTHENTICATION_BACKENDS = [
+    "django_auth_ldap.backend.LDAPBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+# LDAP
+AUTH_LDAP_SERVER_URI = "ldap://ldap"
+# AUTH_LDAP_START_TLS = True
+AUTH_LDAP_BIND_DN = "cn=admin,dc=example,dc=org"
+AUTH_LDAP_BIND_PASSWORD = "admin"
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    "ou=users,dc=example,dc=org", ldap.SCOPE_SUBTREE, "(cn=%(user)s)"
+)
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+    "ou=groups,dc=example,dc=org", ldap.SCOPE_SUBTREE, "(objectClass=groupOfNames)"
+)
+AUTH_LDAP_GROUP_TYPE = GroupOfNamesType(name_attr="cn")
+AUTH_LDAP_ALWAYS_UPDATE_USER = True
+AUTH_LDAP_FIND_GROUP_PERMS = True
+AUTH_LDAP_MIRROR_GROUPS = True
+
 # Grapahe-Diango settings
 GRAPHENE = {
     'SCHEMA': 'app.schema.schema',
 }
 
-# Cross origin
-CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
+# Cross origi
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000', 'http://115.145.135.72:5001', 'http://115.145.135.72:5051'
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # Session
@@ -151,10 +178,10 @@ MEDIA_ROOT = '/var/www'
 MEDIA_ROOT_PREFIX = 'data/'
 
 # Web Url Prefix
-WEB_URL_PREFIX = 'http://localhost:3000/'
+WEB_URL_PREFIX = 'http://115.145.135.72:5001/'
 
 # Server Url Prefix
-SERVER_URL_PREFIX = 'http://localhost:8000/'
+SERVER_URL_PREFIX = 'http://115.145.135.72:5002/'
 
 # Logging
 LOGGING = {
@@ -177,6 +204,7 @@ LOGGING = {
             'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
             'propagate': True,
         },
+        "django_auth_ldap": {"level": "DEBUG", "handlers": ["console"]},
     },
 }
 
@@ -187,7 +215,7 @@ CELERY_RESULT_BACKEND = 'django-db'
 
 # Websocket server
 
-WEBSOCKET_SERVER = 'ws://115.145.173.230:8765'
+WEBSOCKET_SERVER = 'ws://115.145.173.231:8765'
 
 # ASGI APPLICATION
 
