@@ -28,7 +28,7 @@ SECRET_KEY = '93ce-4oo=c@e@b5ryizpze(19t#vdz7y5t=z7s=svq!aev42c('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '115.145.135.72']
+ALLOWED_HOSTS = ['localhost', '115.145.135.72', 'policelab.skku.edu']
 
 # Application definition
 
@@ -169,7 +169,8 @@ GRAPHENE = {
 
 # Cross origi
 CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000', 'http://115.145.135.72:5001', 'http://115.145.135.72:5051'
+    'http://localhost:3000', 'http://115.145.135.72:5001', 'http://115.145.135.72:5051',
+    'https://policelab.skku.edu',
 ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -182,10 +183,10 @@ MEDIA_ROOT = '/var/www'
 MEDIA_ROOT_PREFIX = 'data/'
 
 # Web Url Prefix
-WEB_URL_PREFIX = 'http://115.145.135.72:5001/'
+WEB_URL_PREFIX = 'https://policelab.skku.edu/'
 
 # Server Url Prefix
-SERVER_URL_PREFIX = 'http://115.145.135.72:5002/'
+SERVER_URL_PREFIX = 'https://policelab.skku.edu/'
 
 # Logging
 LOGGING = {

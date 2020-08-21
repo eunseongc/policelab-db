@@ -3,14 +3,13 @@ services:
   nginx:
     image: nginx:1.17.6-alpine
     ports:
-      - 5001:80
-      - 5051:80
-      - 5002:8000
-      - 5052:8000
+      - 80:80
+      - 443:443
     volumes:
       - ${WWW_DIR}:/var/www
       - ${NGINX_LOG_DIR}:/var/log/nginx
       - ./conf.d/nginx:/etc/nginx/conf.d:ro
+      - ./conf.d/certbot:/etc/letsencrypt
     depends_on:
       - policelab-server
 
