@@ -1,6 +1,7 @@
 import graphene
 
 from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.contrib.auth.models import Group
 from graphene_django import DjangoObjectType
 
 from app.decorators import login_required, method_decorator
@@ -13,12 +14,22 @@ class UserNode(DjangoObjectType):
         exclude_fields = ['password']
 
 
+class GroupNode(DjangoObjectType):
+    class Meta:
+        model = Group
+        interfaces = (graphene.relay.Node,)
+
+
 class Query:
     me = graphene.Field(UserNode)
+    groups = graphene.List(GroupNode)
 
     @method_decorator(login_required)
     def resolve_me(self, info, **args):
         return info.context.user
+
+    def resolve_groups(self, info, **args):
+        return Group.objects.all()
 
 
 class Login(graphene.relay.ClientIDMutation):

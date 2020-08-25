@@ -2,6 +2,7 @@ import os
 
 from datetime import datetime
 from django.contrib.gis.db import models
+from django.contrib.auth.models import Group
 from django.conf import settings
 
 from app.storage import OverwriteStorage
@@ -64,6 +65,14 @@ class Case(models.Model):
         'accounts.User',
         related_name='cases',
         blank=True,
+    )
+
+    group = models.ForeignKey(
+        Group,
+        related_name='cases',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
     )
 
     def __str__(self):

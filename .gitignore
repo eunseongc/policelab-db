@@ -291,3 +291,4 @@ data/
 
 # misc
 server/
+conf.d/certbot/

@@ -179,12 +179,17 @@ class CreateCase(graphene.relay.ClientIDMutation):
     class Input:
         name = graphene.String(required=True)
         text = graphene.String(required=True)
+        group_id = graphene.ID()
 
     @method_decorator(login_required)
     def mutate_and_get_payload(self, info, **input):
         name = input.get('name')
         text = input.get('text')
         token = get_random_string(length=16)
+
+        group_id = input.get('group_id')
+        group_id = int(from_global_id(group_id)[1]) if group_id else None
+        group = Group.objects.get(id=group_id) if group_id else None
 
         qr_img = qrcode.make(settings.WEB_URL_PREFIX +
                              'case/upload/{}'.format(token))
@@ -196,6 +201,7 @@ class CreateCase(graphene.relay.ClientIDMutation):
             name=name,
             text=text,
             token=token,
+            group=group,
         )
 
         case.qrcode.save(token + '.png', ContentFile(f.getvalue()))
