@@ -87,6 +87,7 @@ WSGI_APPLICATION = 'app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.mysql',
+        'CONN_MAX_AGE': 3600,
         'HOST': 'mariadb',
         'USER': 'root',
         'PASSWORD': 'root',
@@ -175,8 +176,8 @@ CORS_ORIGIN_WHITELIST = [
 CORS_ALLOW_CREDENTIALS = True
 
 # Session
-SESSION_COOKIE_SAMESITE = None
-# SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
 
 # Media root
 MEDIA_ROOT = '/var/www'
