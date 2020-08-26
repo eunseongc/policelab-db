@@ -18,6 +18,7 @@ from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
 from django.core.files.base import ContentFile, File
 from django.contrib.gis.geos import Point
+from django.contrib.auth.models import Group
 
 from graphql_relay import from_global_id, to_global_id
 
