@@ -47,10 +47,15 @@ services:
 
   # https://github.com/osixia/docker-openldap
   ldap:
-      image: osixia/openldap:1.4.0
-      ports:
-        - 389:389
-        - 636:636
+    image: osixia/openldap:1.4.0
+    ports:
+      - 389:389
+      - 636:636
+
+  ldap-admin:
+    image: osixia/phpldapadmin:0.9.0
+    environment:
+      - PHPLDAPADMIN_LDAP_HOSTS=ldap
 
   policelab-server:
     build:
