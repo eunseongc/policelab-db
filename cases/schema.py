@@ -10,10 +10,10 @@ import numpy as np
 from collections import OrderedDict
 from asgiref.sync import async_to_sync
 
-from datetime import datetime
 from io import BytesIO
 
 from django.conf import settings
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
 from django.core.files.base import ContentFile, File
@@ -213,6 +213,62 @@ class CreateCase(graphene.relay.ClientIDMutation):
         return CreateCase(case=case)
 
 
+def upload_video(id_type, params):
+    if id_type == 'token':
+        try:
+            case = Case.objects.get(token=params.get('token'))
+        except Case.DoesNotExist:
+            raise InvalidInputError(message=_('invalid token'))
+
+        if case.is_expired:
+            raise InvalidInputError(message=_('token is expired'))
+
+    elif id_type == 'id':
+        case_id = int(from_global_id(params.get('case_id')[1]))
+        try:
+            case = Case.objects.get(id=case_id)
+        except Case.DoesNotExist:
+            raise InvalidInputError(message=_('case id is invalid'))
+
+    else:
+        raise ValueError("id_type is invalid (must be 'token' or 'id')")
+
+    location = params.get('location')
+    rec_date = params.get('rec_date')
+    original_date = params.get('original_date')
+
+    if rec_date is None:
+        rec_date = timezone.now()
+
+    video = Video.objects.create(case=case)
+    ext = params.get('upload').name.rpartition('.')[-1]
+    video_name = rec_date.strftime("%Y-%m-%d_%H:%M") + '.' + ext
+    video.upload = File(params.get('upload'), name=video_name)
+
+    if location:
+        point = Point(location.longitude, location.latitude, srid=4326)
+        video.location = point
+
+    video.rec_date = rec_date
+    video.original_date = original_date
+
+    thumbnail_name = 'thumbnail.jpg'
+    in_filename = params.get('upload').file.name
+    out_filename = os.path.join(os.path.dirname(in_filename),
+                                thumbnail_name)
+
+    generate_thumbnail(in_filename, out_filename, 0, 512)
+
+    video.thumbnail = File(open(out_filename, 'rb'), name=thumbnail_name)
+
+    video.save()
+
+    create_gallery.delay(video.id)
+
+    return UploadVideo(video=video)
+
+
+
 class UploadVideo(graphene.relay.ClientIDMutation):
     video = graphene.Field(VideoNode, required=True)
 
@@ -220,48 +276,25 @@ class UploadVideo(graphene.relay.ClientIDMutation):
         token = graphene.String(required=True)
         location = graphene.Field(LocationInput)
         rec_date = graphene.DateTime()
+        original_date = graphene.DateTime()
         upload = Upload()
 
     def mutate_and_get_payload(self, info, **input):
-        try:
-            case = Case.objects.get(token=input.get('token'))
-        except Case.DoesNotExist:
-            raise InvalidInputError(message=_('invalid token'))
+        return upload_video('token', input)
 
-        if case.is_expired:
-            raise InvalidInputError(message=_('token is expired'))
 
-        location = input.get('location')
-        rec_date = input.get('rec_date')
+class UploadVideoByID(graphene.relay.ClientIDMutation):
+    video = graphene.Field(VideoNode, required=True)
 
-        if rec_date is None:
-            rec_date = datetime.now()
+    class Input:
+        case_id = graphene.ID(required=True)
+        location = graphene.Field(LocationInput)
+        rec_date = graphene.DateTime()
+        original_date = graphene.DateTime()
+        upload = Upload()
 
-        video = Video.objects.create(case=case)
-        ext = input.get('upload').name.rpartition('.')[-1]
-        video_name = rec_date.strftime("%Y-%m-%d_%H:%M") + '.' + ext
-        video.upload = File(input.get('upload'), name=video_name)
-
-        if location:
-            point = Point(location.longitude, location.latitude, srid=4326)
-            video.location = point
-
-        video.rec_date = rec_date
-
-        thumbnail_name = 'thumbnail.jpg'
-        in_filename = input.get('upload').file.name
-        out_filename = os.path.join(os.path.dirname(in_filename),
-                                    thumbnail_name)
-
-        generate_thumbnail(in_filename, out_filename, 0, 512)
-
-        video.thumbnail = File(open(out_filename, 'rb'), name=thumbnail_name)
-
-        video.save()
-
-        create_gallery.delay(video.id)
-
-        return UploadVideo(video=video)
+    def mutate_and_get_payload(self, info, **input):
+        return upload_video('id', input)
 
 
 class SuperResolution(graphene.relay.ClientIDMutation):
@@ -363,6 +396,7 @@ class SearchPerson(graphene.relay.ClientIDMutation):
 class Mutation:
     create_case = CreateCase.Field()
     upload_video = UploadVideo.Field()
+    upload_video_by_id = UploadVideoByID.Field()
     super_resolution = SuperResolution.Field()
     search_person = SearchPerson.Field()
 
