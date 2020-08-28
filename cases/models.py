@@ -1,9 +1,9 @@
 import os
 
-from datetime import datetime
 from django.contrib.gis.db import models
 from django.contrib.auth.models import Group
 from django.conf import settings
+from django.utils import timezone
 
 from app.storage import OverwriteStorage
 
@@ -103,7 +103,10 @@ class Video(models.Model):
     location = models.PointField(blank=True, null=True)
 
     # Time information of the video
-    rec_date = models.DateTimeField(default=datetime.now)
+    rec_date = models.DateTimeField(default=timezone.now)
+
+    # Original time date
+    original_date = models.DateTimeField(default=timezone.now)
 
     # Whether video is preprocessed or not
     is_preprocessed = models.BooleanField(default=False)
