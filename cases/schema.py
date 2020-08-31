@@ -245,6 +245,8 @@ def upload_video(id_type, params):
     video_name = rec_date.strftime("%Y-%m-%d_%H:%M") + '.' + ext
     video.upload = File(params.get('upload'), name=video_name)
 
+    video.hash = params.get('hash', None)
+
     if location:
         point = Point(location.longitude, location.latitude, srid=4326)
         video.location = point
@@ -291,6 +293,7 @@ class UploadVideoByID(graphene.relay.ClientIDMutation):
         location = graphene.Field(LocationInput)
         rec_date = graphene.DateTime()
         original_date = graphene.DateTime()
+        hash = graphene.String()
         upload = Upload()
 
     def mutate_and_get_payload(self, info, **input):

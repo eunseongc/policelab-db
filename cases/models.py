@@ -108,6 +108,9 @@ class Video(models.Model):
     # Original time date
     original_date = models.DateTimeField(default=timezone.now)
 
+    # hash
+    hash = models.CharField(max_length=300, blank=True, null=True)
+
     # Whether video is preprocessed or not
     is_preprocessed = models.BooleanField(default=False)
 
