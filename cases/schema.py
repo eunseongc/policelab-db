@@ -224,7 +224,7 @@ def upload_video(id_type, params):
             raise InvalidInputError(message=_('token is expired'))
 
     elif id_type == 'id':
-        case_id = int(from_global_id(params.get('case_id')[1]))
+        case_id = int(from_global_id(params.get('case_id'))[1])
         try:
             case = Case.objects.get(id=case_id)
         except Case.DoesNotExist:
