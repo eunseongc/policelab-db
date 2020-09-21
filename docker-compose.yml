@@ -13,6 +13,12 @@ services:
     depends_on:
       - policelab-server
 
+  apache:
+    image: httpd:2.4
+    volumes:
+      - ${WWW_DIR}/apk:/usr/local/apache2/htdocs
+      - ./conf.d/apache2/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+
   rabbitmq:
     image: rabbitmq:3.8.2
     environment:
