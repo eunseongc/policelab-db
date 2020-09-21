@@ -20,7 +20,7 @@ from django.shortcuts import render
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.decorators.csrf import csrf_exempt
 
-from .views import CustomGraphQLView
+from .views import CustomGraphQLView, download_apk
 
 
 def render_graphiql(request):
@@ -43,3 +43,4 @@ urlpatterns += [
 ]
 
 urlpatterns += staticfiles_urlpatterns()
+urlpatterns += [re_path(r'^apk/release/?$', download_apk)]
