@@ -1,6 +1,7 @@
 import os
 import json
 
+from django.db import close_old_connections
 from django.conf import settings
 from django.http import FileResponse
 from graphene_file_upload.django import FileUploadGraphQLView
@@ -17,6 +18,10 @@ class CustomGraphQLView(FileUploadGraphQLView):
             return formatted
 
         return FileUploadGraphQLView.format_error(error)
+
+    def execute_graphql_request(self, *args, **kwargs):
+        close_old_connections()
+        return super().execute_graphql_request(*args, **kwargs)
 
 
 def download_apk(requests):
