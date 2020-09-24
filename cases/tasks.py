@@ -19,7 +19,7 @@ logger = logging.getLogger('mylogger')
 
 @shared_task
 def create_gallery(video_id):
-    print('create_gallery')
+    logger.info('action: create_gallery')
     video = Video.objects.get(id=video_id)
     path = str(video.upload)
     asyncio.get_event_loop().run_until_complete(create_gallery_async(video_id, path))
@@ -27,7 +27,7 @@ def create_gallery(video_id):
 
 @shared_task
 def improve_resolution(image_id, obj_type, location):
-    print('improve_resolution')
+    logger.info('action: improve_resolution')
     image = Image.objects.get(id=image_id)
     path = str(image.original)
     asyncio.get_event_loop().run_until_complete(
@@ -37,7 +37,7 @@ def improve_resolution(image_id, obj_type, location):
 
 @shared_task
 def query_feature_extraction(image_id):
-    print('query_feature_extraction')
+    logger.info('action: query_feature_extraction')
     image = Image.objects.get(id=image_id)
     path = str(image.original)
     asyncio.get_event_loop().run_until_complete(
