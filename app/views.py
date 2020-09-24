@@ -19,6 +19,10 @@ class CustomGraphQLView(FileUploadGraphQLView):
 
         return FileUploadGraphQLView.format_error(error)
 
+    def execute_graphql_request(self, *args, **kwargs):
+        close_old_connections()
+        return super().execute_graphql_request(*args, **kwargs)
+
 
 def download_apk(requests):
     with open(os.path.join(settings.APK_DIR, 'release.json'), 'r') as f:
