@@ -5,13 +5,22 @@ from django.contrib.auth.models import Group
 from graphene_django import DjangoObjectType
 
 from app.decorators import login_required, method_decorator
+from cases.schema import CaseNode
 
 
 class UserNode(DjangoObjectType):
+    all_cases = graphene.List(CaseNode)
+
     class Meta:
         model = get_user_model()
         interfaces = (graphene.relay.Node, )
         exclude_fields = ['password']
+
+    def resolve_all_cases(self, *args, **kwargs):
+        all_cases = list(self.cases.all())
+        for group in self.groups.all():
+            all_cases += list(group.cases.all())
+        return set(all_cases)
 
 
 class GroupNode(DjangoObjectType):
