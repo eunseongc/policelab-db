@@ -252,7 +252,9 @@ def upload_video(id_type, params):
         video.location = point
 
     video.rec_date = rec_date
-    video.original_date = original_date
+
+    if original_date is not None:
+        video.original_date = original_date
 
     thumbnail_name = 'thumbnail.jpg'
     in_filename = params.get('upload').file.name
