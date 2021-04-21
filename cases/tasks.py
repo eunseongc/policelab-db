@@ -46,7 +46,7 @@ def query_feature_extraction(image_id):
 
 
 async def create_gallery_async(video_id, path):
-    async with websockets.connect(settings.WEBSOCKET_SERVER) as websocket:
+    async with websockets.connect(**settings.WEBSOCKET_SERVER) as websocket:
         data = {
             'action': 'create_gallery',
             'video': {
@@ -68,14 +68,13 @@ async def create_gallery_async(video_id, path):
         await sync_to_async(video.save)()
 
 
-async def query_feature_extraction_async(image_id, path):
-    async with websockets.connect(settings.WEBSOCKET_SERVER) as websocket:
+async def query_feature_extraction_async(case_id, query_img, videos):
+    async with websockets.connect(**settings.WEBSOCKET_SERVER) as websocket:
         data = {
             'action': 'query_feature',
-            'image': {
-                'id': image_id,
-                'path': path,
-            },
+            'case_id': case_id,
+            'query_img': query_img,
+            'videos': videos,
         }
 
         logger.debug(f'data: {data}')
@@ -86,18 +85,22 @@ async def query_feature_extraction_async(image_id, path):
         logger.debug(f'response: {response}')
 
     if response['ok']:
-        await sync_to_async(close_old_connections)()
-        image = await sync_to_async(Image.objects.get)(id=image_id)
+        # await sync_to_async(close_old_connections)()
+        # image = await sync_to_async(Image.objects.get)(id=image_id)
 
-        query_path = os.path.join(settings.MEDIA_ROOT, response['path'])
-        image.query_feature = File(open(query_path, 'rb'), name=os.path.basename(query_path))
+        # query_path = os.path.join(settings.MEDIA_ROOT, response['path'])
+        # image.query_feature = File(open(query_path, 'rb'), name=os.path.basename(query_path))
 
-        await sync_to_async(close_old_connections)()
-        await sync_to_async(image.save)()
+        # await sync_to_async(close_old_connections)()
+        # await sync_to_async(image.save)()
+
+        return response['results']
+
+    raise Exception("query feature")
 
 
 async def improve_resolution_async(image_id, obj_type, location, path):
-    async with websockets.connect(settings.WEBSOCKET_SERVER) as websocket:
+    async with websockets.connect(**settings.WEBSOCKET_SERVER) as websocket:
         if obj_type == 'human':
             data = {
                 'action': 'super_resolution',

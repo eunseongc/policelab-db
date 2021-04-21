@@ -346,56 +346,68 @@ class SearchPerson(graphene.relay.ClientIDMutation):
         img.original = File(image, name='image.png')
         img.save()
 
-        async_to_sync(query_feature_extraction_async)(img.id, str(img.original))
+        case_id = video.case.id
+        videos = list(map(lambda item: {'id': item.id, 'path': str(item.upload)}, video.case.videos.all()))
+        results = async_to_sync(query_feature_extraction_async)(case_id, str(img.original), videos)
+        videos = Video.objects.filter(id__in=map(lambda item: item['video_id'], results))
 
-        img.refresh_from_db()
+        for video, result in zip(videos, results):
+            result['video_id'] = to_global_id(VideoNode.__name__, result['video_id'])
+            result['rec_date'] = video.rec_date.isoformat()
+            result['thumbnail'] = settings.SERVER_URL_PREFIX + str(video.thumbnail)
+            result['uri'] = settings.SERVER_URL_PREFIX + str(video.upload)
+            for crop_result in result['crop']:
+                crop_result['image'] = settings.SERVER_URL_PREFIX + crop_result['image']
 
-        query_feature = np.load(os.path.join(settings.MEDIA_ROOT, str(img.query_feature)))
+        results = sorted(results, key=lambda item: item['rec_date'])
+        # img.refresh_from_db()
 
-        result = []
-        gallery = {}
-        for video in video.case.videos.all():
-            video_dir = os.path.dirname(os.path.join(settings.MEDIA_ROOT, str(video.upload)))
-            crop_dir = os.path.join(video_dir, 'gallery', 'cropped')
-            gallery_path = os.path.join(video_dir, 'gallery', 'gallery.npy')
+        # query_feature = np.load(os.path.join(settings.MEDIA_ROOT, str(img.query_feature)))
 
-            if not os.path.exists(gallery_path):
-                continue
+        # result = []
+        # gallery = {}
+        # for video in video.case.videos.all():
+        #     video_dir = os.path.dirname(os.path.join(settings.MEDIA_ROOT, str(video.upload)))
+        #     crop_dir = os.path.join(video_dir, 'gallery', 'cropped')
+        #     gallery_path = os.path.join(video_dir, 'gallery', 'gallery.npy')
 
-            sub_gallery = np.load(gallery_path, allow_pickle=True).item()
-            sub_gallery = {os.path.join(crop_dir, k.split('/')[1]): v for k, v in sub_gallery.items()}
+        #     if not os.path.exists(gallery_path):
+        #         continue
 
-            gallery.update(sub_gallery)
+        #     sub_gallery = np.load(gallery_path, allow_pickle=True).item()
+        #     sub_gallery = {os.path.join(crop_dir, k.split('/')[1]): v for k, v in sub_gallery.items()}
 
-        for video_id, videos in calc_similarity(query_feature=query_feature, gallery=gallery).items():
-            crop_results = []
+        #     gallery.update(sub_gallery)
 
-            for i in range(min(5, len(videos))):
-                image, similarity = videos[i]
-                time = int(os.path.basename(image).partition('_')[0])
+        # for video_id, videos in calc_similarity(query_feature=query_feature, gallery=gallery).items():
+        #     crop_results = []
 
-                if similarity <= 0.3:
-                    continue
+        #     for i in range(min(5, len(videos))):
+        #         image, similarity = videos[i]
+        #         time = int(os.path.basename(image).partition('_')[0])
 
-                crop_results.append({
-                    'image': image.replace('/var/www/', settings.SERVER_URL_PREFIX),
-                    'time': time,
-                    'similarity': similarity.item(),
-               })
+        #         if similarity <= 0.3:
+        #             continue
 
-            video = Video.objects.get(id=video_id)
-            thumbnail = settings.SERVER_URL_PREFIX + str(video.thumbnail)
+        #         crop_results.append({
+        #             'image': image.replace('/var/www/', settings.SERVER_URL_PREFIX),
+        #             'time': time,
+        #             'similarity': similarity.item(),
+        #        })
 
-            if len(crop_results) == 0:
-                continue
+        #     video = Video.objects.get(id=video_id)
+        #     thumbnail = settings.SERVER_URL_PREFIX + str(video.thumbnail)
 
-            result.append({
-                'video_id': to_global_id(VideoNode.__name__, video_id),
-                'thumbnail': thumbnail,
-                'crop': crop_results,
-            })
+        #     if len(crop_results) == 0:
+        #         continue
 
-        return SearchPerson(result=json.dumps(result))
+        #     result.append({
+        #         'video_id': to_global_id(VideoNode.__name__, video_id),
+        #         'thumbnail': thumbnail,
+        #         'crop': crop_results,
+        #     })
+
+        return SearchPerson(result=json.dumps(results))
 
 
 class Mutation:
