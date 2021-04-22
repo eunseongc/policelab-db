@@ -58,6 +58,9 @@ class VideoNode(DjangoObjectType):
     def resolve_upload(self, *args, **kwargs):
         return settings.SERVER_URL_PREFIX + str(self.upload)
 
+    def resolve_upload2(self, *args, **kwargs):
+        return settings.SERVER_URL_PREFIX + str(self.upload2) if self.upload2 else None
+
     def resolve_thumbnail(self, *args, **kwargs):
         return settings.SERVER_URL_PREFIX + str(self.thumbnail)
 

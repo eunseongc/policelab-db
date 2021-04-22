@@ -82,7 +82,12 @@ class Case(models.Model):
 class Video(models.Model):
 
     # Directory to upload file
-    upload = models.FileField(upload_to=video_directory_path)
+    upload = models.FileField(storage=OverwriteStorage(),
+                              upload_to=video_directory_path)
+
+    # Lower quality version of video for multiple play
+    upload2 = models.FileField(storage=OverwriteStorage(),
+                               upload_to=video_directory_path, blank=True, null=True)
 
     # Video name
     name = models.CharField(max_length=300)
